@@ -6,23 +6,35 @@ module Inline
 		
 		include HighLine::SystemExtensions
 
-		attr_accessor :text, :length, :offset, :position, :max_length
+		attr_accessor :text, :length, :position, :max_length, :history
+		attr_reader :offset, :prompt
 
-		def initialize(line="")
+		def initialize(prompt="",line="")
 			@text = line
+			@history = HistoryBuffer.new(MAX_UNDO_OPERATIONS)
 			@position = 0
+			@prompt = prompt
+			@offset = prompt.length
 		end
 
 		def max_length
-			terminal_size[0]
+			terminal_size[0]-@offset
+		end
+
+		def bol
+		 0	
 		end
 
 		def bol?
-			@position<=0
+			@position<=bol
+		end
+		
+		def eol
+			@text.length-1
 		end
 
 		def eol?
-			@position>=@text.length
+			@position>=eol
 		end
 
 		def <(offset)
@@ -35,11 +47,14 @@ module Inline
 
 		def <<(char)
 			@text << char.chr
-			self > 1
 		end
 
 		def [](index)
 			@text[index]
+		end
+
+		def []=(index, chars)
+			@text[index] = chars
 		end
 
 		def length

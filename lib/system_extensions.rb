@@ -7,5 +7,9 @@ module Inline
       Win32API.new("crtdll", "_putch", ["I"], "v").Call(char)
     end
 
+		def raw_print(string)
+			string.each_byte { |c| put_character c }
+		end
+
 	end
 end

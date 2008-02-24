@@ -32,13 +32,14 @@ module Inline
 			bind(ENTER) { add_to_history }
 			bind(CTRL_X) { exit_script }
 			bind(BACKSPACE) { delete_left_character }
-			bind(CTRL_K) { erase_line }
+			bind(CTRL_K) { clear_line }
 			bind(CTRL_D) { debug_line }
 			bind(SPECIAL) do
 				arrow_char = get_character(STDIN)
 				case arrow_char
 				when LEFT_ARROW: move_left
 				when RIGHT_ARROW: move_right
+				when DEL: delete_character
 				else nil
 				end
 			end

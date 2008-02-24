@@ -10,9 +10,12 @@ module Inline
 		BACKSPACE = 8
 		SPACE = 32
 
+		CTRL_A = 1
+		CTRL_B = 2
 		CTRL_C = 3
-		CTRL_K = 11
 		CTRL_D = 4
+		CTRL_E = 5
+		CTRL_K = 11
 		CTRL_X = 24
 
 		F1 = 59
@@ -29,6 +32,7 @@ module Inline
 		SPECIAL = 224
 		LEFT_ARROW = 75
 		RIGHT_ARROW = 77
+		DEL = 83
 
 		def mapped?
 			Mappings.constants.each do |c| 

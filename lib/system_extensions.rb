@@ -4,7 +4,7 @@ module Inline
 	module SystemExtensions
 
 		def put_character(char, input = STDIN)
-      Win32API.new("crtdll", "_putch", ["I"], "v").Call(char)
+      Win32API.new("crtdll", "_putch", ["I"], "V").Call(char)
     end
 
 		def raw_print(string)

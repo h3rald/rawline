@@ -14,12 +14,22 @@ module Inline
 		end
 
 		def print_character(char=Editor.char)
-			unless Editor.line.length >= Editor.line.max_length
-				put_character char
-				Editor.line > 1
-				unless Editor.char == 224 then
-					Editor.line.history << Editor.line
-					Editor.line << Editor.char 
+			unless Editor.line.length >= Editor.line.max_length-2
+				case
+				when Editor.line.position < Editor.line.length then
+					chars = select_characters_from_cursor
+					Editor.line.text[Editor.line.position] = "#{char.chr}#{Editor.line.text[Editor.line.position].chr}"
+					put_character char
+					Editor.line > 1
+					raw_print chars
+					chars.length.times { put_character BACKSPACE } # move cursor back
+				else
+					put_character char
+					Editor.line > 1
+					unless Editor.char == 224 then
+						Editor.line.history << Editor.line
+						Editor.line << Editor.char 
+					end
 				end
 			end
 		end
@@ -42,7 +52,7 @@ module Inline
 		end
 
 		def move_right
-			unless Editor.line.eol?:
+			unless Editor.line.position > Editor.line.eol:
 				Editor.line > 1
 				put_character Editor.line.text[Editor.line.position-1]
 				return true
@@ -76,7 +86,7 @@ module Inline
 			unless Editor.line.position > Editor.line.eol
 				Editor.line.history << Editor.line.text
 				# save characters to shift
-				chars = (Editor.line.eol?) ? ' ' : select_characters(:right, Editor.line.length-Editor.line.position, 1)
+				chars = (Editor.line.eol?) ? ' ' : select_characters_from_cursor(1)
 				# remove character from console and shift characters
 				raw_print chars
 				put_character SPACE
@@ -96,6 +106,10 @@ module Inline
 		end
 
 		private
+
+		def select_characters_from_cursor(offset=0)
+			select_characters(:right, Editor.line.length-Editor.line.position, offset)
+		end
 
 		def move_to_position(pos)
 			n = pos-Editor.line.position

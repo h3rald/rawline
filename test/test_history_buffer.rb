@@ -16,6 +16,14 @@ describe InLine::HistoryBuffer do
  		@history.length.should == 0
 	end
 
+	it "allows items to be added to the history" do
+		@history << "line #1"
+		@history << "line #2"
+		@history << "line #3"
+		@history << "line #2"
+		@history.should == ["line #1", "line #3", "line #2"]
+	end
+
 	it "does not overflow" do
 		@history << "line #1"
 		@history << "line #2"
@@ -52,6 +60,39 @@ describe InLine::HistoryBuffer do
 		@history.position.should == 4
 		@history.forward
 		@history.position.should == 4
+	end
+
+	it "can retrieve the last element or the element at @position via 'get'" do
+		@history.get.should == nil
+		@history << "line #1"
+		@history << "line #2"
+		@history << "line #3"
+		@history << "line #4"
+		@history << "line #5"
+		@history.get.should == "line #5"
+		@history.back
+		@history.get.should == "line #4"
+		@history.forward
+		@history.get.should == "line #5"
+	end
+
+	it "can be cleared and resized" do
+		@history << "line #1"
+		@history << "line #2"
+		@history << "line #3"
+		@history << "line #4"
+		@history << "line #5"
+		@history.back
+		@history.back
+		@history.get.should == "line #4"
+		@history.resize(6)
+		@history.position.should == nil
+		@history << "line #6"
+		@history.get.should == "line #6"
+		@history.clear
+		@history.should == []
+		@history.size.should == 6
+		@history.position.should == nil
 	end
  
 end

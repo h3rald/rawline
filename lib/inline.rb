@@ -3,8 +3,8 @@
 module Inline
 	HOME = File.dirname(File.expand_path(__FILE__))
 
-	MAX_UNDO_OPERATIONS = 3
-	MAX_HISTORY_ITEMS = 5
+	MAX_UNDO_OPERATIONS = 50
+	MAX_HISTORY_ITEMS = 20
 end
 
 require "highline"

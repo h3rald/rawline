@@ -15,8 +15,15 @@ module Inline
 		CTRL_C = 3
 		CTRL_D = 4
 		CTRL_E = 5
+		CTRL_F = 6
+		CTRL_G = 7
+		CTRL_H = 8
+		CTRL_I = 9
+		CTRL_J = 10
 		CTRL_K = 11
 		CTRL_X = 24
+		CTRL_Y = 25
+		CTRL_Z = 26
 
 		F1 = 59
 		F2 = 60
@@ -32,6 +39,8 @@ module Inline
 		SPECIAL = 224
 		LEFT_ARROW = 75
 		RIGHT_ARROW = 77
+		UP_ARROW = 72
+		DOWN_ARROW = 80
 		DEL = 83
 
 		def mapped?

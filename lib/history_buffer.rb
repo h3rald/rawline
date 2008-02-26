@@ -6,57 +6,67 @@ module InLine
 
 		attr_reader :position, :size
 
+		alias clear_array clear
+		alias add <<
+
 		def initialize(size)
 			@size = size
 			@position = nil
 		end
 
+		def resize(new_size)
+			if new_size < @size
+				@size-new_size.times { pop }
+			end
+			@size = new_size
+			@position = nil
+		end
+		
+		def clear
+			@position = nil
+			clear_array
+		end
+
 		def get
-			return nil unless self.length > 0
-			@position = self.length-1 unless @position
-			self[@position]
+			return nil unless length > 0
+			@position = length-1 unless @position
+			at @position
+		end
+
+		def end?
+			@position == length-1
+		end
+
+		def start?
+			@position == 0
 		end
 
 		def back
-			return nil unless self.length > 0
+			return nil unless length > 0
 			case @position
-			when nil: @position = self.length-1
+			when nil: @position = length-1
 			when 0: nil
 			else @position -= 1
 			end
 		end
 
 		def forward
-			return nil unless self.length > 0
+			return nil unless length > 0
 			case @position
-			when nil: @position = self.length-1
-			when self.length-1: nil
+			when nil: @position = length-1
+			when length-1: nil
 			else @position += 1
 			end
 		end
 
-		def resize(new_size)
-			if new_size < @size
-				@size-new_size.times { self.pop }
-			end
-			@size = new_size
-			@position = nil
-		end
-
 		def <<(item)
-			if @position then
-				if item != self[@position] then
-					# overwrite history element and delete successors
-					self[@position] = item
-					(self.length-@position-1).times { self.pop } 
-				end
-			else
-				if @size <= self.length
-					self.reverse!.pop 
-					self.reverse!
-				end
-				self.push(item)
+			# Remove the oldest element if size is exceeded
+			if @size <= length
+				reverse!.pop 
+				reverse!
 			end
+			# Add the new item and reset the position
+			push(item)
 			@position = nil
 		end
 

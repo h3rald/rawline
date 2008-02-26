@@ -11,7 +11,7 @@ module Inline
 
 		def initialize(prompt="",line="")
 			@text = line
-			@history = HistoryBuffer.new(MAX_UNDO_OPERATIONS)
+			@history = InLine::HistoryBuffer.new(MAX_UNDO_OPERATIONS)
 			@position = 0
 			@prompt = prompt
 			@offset = prompt.length

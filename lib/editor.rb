@@ -13,6 +13,10 @@ module Inline
 			@@line
 		end
 
+		def self.line=(l)
+			@@line = l
+		end
+
 		def self.clear_line
 			@@line.text = ''
 			@@line.position = 0
@@ -34,17 +38,8 @@ module Inline
 			@@history = h
 		end
 
-		def self.history_add(l)
-			@@history << l
-		end
-
-		def self.history_get(i)
-			@@history[i]
-		end
-
-	
 		def initialize(keyboard=nil)
-			@@history = []
+			@@history = InLine::HistoryBuffer.new(MAX_HISTORY_ITEMS)
 			@@char = nil
 			@keyboard = keyboard || KeyBoard.new
 			@newline = true
@@ -53,6 +48,7 @@ module Inline
 		def read(prompt="", input=STDIN)
 			@newline = true
 			@@line = Line.new(prompt)
+			add_to_line_history
 			loop do
 				print prompt if @newline
 				@newline = false

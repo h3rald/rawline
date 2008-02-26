@@ -27,15 +27,16 @@ module Inline
 					put_character char
 					Editor.line > 1
 					unless Editor.char == 224 then
-						Editor.line.history << Editor.line
 						Editor.line << Editor.char 
 					end
 				end
+				add_to_line_history
 			end
 		end
 
-		def add_to_history
-			Editor.history << Editor.line
+		def newline
+			add_to_line_history
+			add_to_history
 		end
 
 		def exit_script
@@ -75,16 +76,27 @@ module Inline
 			move_to_position(pos)
 		end
 
+		def debug_history
+			line = Editor.line.text
+			puts
+			puts "History:"
+			Editor.history.each {|l| puts "- #{l}"}
+			puts "History Position: #{Editor.history.position}"
+			overwrite_line(line)
+		end
+
+		def clear_history
+			Editor.history.clear
+		end
+
 		def delete_left_character
 			if move_left then
-				Editor.line.history << Editor.line
 				delete_character
 			end
 		end
 
 		def delete_character
 			unless Editor.line.position > Editor.line.eol
-				Editor.line.history << Editor.line.text
 				# save characters to shift
 				chars = (Editor.line.eol?) ? ' ' : select_characters_from_cursor(1)
 				# remove character from console and shift characters
@@ -93,19 +105,80 @@ module Inline
 				(chars.length+1).times { put_character BACKSPACE }
 				#remove character from line
 				Editor.line[Editor.line.position] = ''
+				add_to_line_history
 			end
 		end
 
 		def clear_line
-			Editor.line.history << Editor.line
 			put_character ENTER
-			Editor.line.prompt.each_byte { |c| put_character c }
+			raw_print Editor.line.prompt
 			Editor.line.length.times { put_character SPACE }
 			Editor.line.length.times { put_character BACKSPACE }
 			Editor.clear_line
+			add_to_line_history
+		end
+
+		def undo
+			generic_history_back(Editor.line.history) if Editor.line.history.position == nil
+			generic_history_back(Editor.line.history)
+		end
+
+		def repeat
+			generic_history_forward(Editor.line.history)
+		end
+
+		def history_back
+			unless Editor.history.position
+				current_line = Editor.line.text.dup
+				Editor.history << current_line
+				Editor.history.back
+			end
+			generic_history_back(Editor.history)
+		end
+
+		def history_forward
+			generic_history_forward(Editor.history)
+		end
+
+		def add_to_line_history
+			Editor.line.history << Editor.line.text.dup
+		end
+
+		def add_to_history
+			Editor.history << Editor.line.text.dup
 		end
 
 		private
+
+		def generic_history_back(history)
+			unless history.empty?
+				history.back
+				line = history.get
+				overwrite_line(line)
+			end
+		end
+
+		def generic_history_forward(history)
+			if history.forward then
+				overwrite_line(history.get)
+			end
+		end
+
+		def overwrite_line(line)
+			text = Editor.line.text
+			put_character ENTER
+			raw_print Editor.line.prompt
+			raw_print line
+			n = text.length-line.length+1
+			if n > 0
+				n.times { put_character SPACE } 
+				n.times { put_character BACKSPACE }
+			end
+			Editor.line.text = line
+			Editor.line.position = line.length
+			move_to_position(line.length)		
+		end
+		
 
 		def select_characters_from_cursor(offset=0)
 			select_characters(:right, Editor.line.length-Editor.line.position, offset)

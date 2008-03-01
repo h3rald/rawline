@@ -5,11 +5,16 @@ module InLine
 	class HistoryBuffer < Array
 
 		attr_reader :position, :size
+		attr_accessor :duplicates, :exclude, :cycle
 
 		alias clear_array clear
 		alias add <<
 
 		def initialize(size)
+			@duplicates = true
+			@exclude = lambda { nil }
+			@cycle = false
+			yield self if block_given?
 			@size = size
 			@position = nil
 		end
@@ -19,11 +24,11 @@ module InLine
 				@size-new_size.times { pop }
 			end
 			@size = new_size
-			@position = nil
+			@position = nil 
 		end
 		
 		def clear
-			@position = nil
+			@position = nil 
 			clear_array
 		end
 
@@ -45,7 +50,7 @@ module InLine
 			return nil unless length > 0
 			case @position
 			when nil: @position = length-1
-			when 0: nil
+			when 0: @position = length-1 if @cycle
 			else @position -= 1
 			end
 		end
@@ -54,20 +59,23 @@ module InLine
 			return nil unless length > 0
 			case @position
 			when nil: @position = length-1
-			when length-1: nil
+			when length-1: @position = 0 if @cycle
 			else @position += 1
 			end
 		end
 
 		def <<(item)
-			# Remove the oldest element if size is exceeded
-			if @size <= length
-				reverse!.pop 
-				reverse!
+			delete(item) unless @duplicates
+			unless @exclude.call(item)
+				# Remove the oldest element if size is exceeded
+				if @size <= length
+					reverse!.pop 
+					reverse!
+				end
+				# Add the new item and reset the position
+				push(item)
+				@position = nil 
 			end
-			# Add the new item and reset the position
-			push(item)
-			@position = nil
 		end
 
 	end

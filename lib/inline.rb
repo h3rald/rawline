@@ -1,19 +1,13 @@
 #!/usr/bin/ruby
 
-module Inline
+module InLine
 	HOME = File.dirname(File.expand_path(__FILE__))
-
-	MAX_UNDO_OPERATIONS = 50
-	MAX_HISTORY_ITEMS = 20
 end
 
 require "highline"
-require "#{Inline::HOME}/system_extensions"
-require "#{Inline::HOME}/mappings"
-require "#{Inline::HOME}/actions"
-require "#{Inline::HOME}/keyboard"
-require "#{Inline::HOME}/history_buffer"
-require "#{Inline::HOME}/line"
-require "#{Inline::HOME}/editor"
+require "#{InLine::HOME}/mappings"
+require "#{InLine::HOME}/history_buffer"
+require "#{InLine::HOME}/line"
+require "#{InLine::HOME}/editor"
 
 

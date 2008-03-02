@@ -5,9 +5,9 @@ module InLine
 end
 
 require "highline"
-require "#{InLine::HOME}/mappings"
-require "#{InLine::HOME}/history_buffer"
-require "#{InLine::HOME}/line"
-require "#{InLine::HOME}/editor"
+require "#{InLine::HOME}/inline/mappings"
+require "#{InLine::HOME}/inline/history_buffer"
+require "#{InLine::HOME}/inline/line"
+require "#{InLine::HOME}/inline/editor"
 
 

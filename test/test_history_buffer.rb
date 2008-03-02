@@ -4,7 +4,7 @@ module InLine
 	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
 end
 
-require "#{InLine::TEST_HOME}/lib/history_buffer"
+require "#{InLine::TEST_HOME}/lib/inline/history_buffer"
 
 describe InLine::HistoryBuffer do
 

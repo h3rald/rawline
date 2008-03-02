@@ -32,7 +32,7 @@ module InLine
 		CTRL_T = 20
 		CTRL_U = 21
 		CTRL_V = 22
-		###########
+		CTRL_W = 23
 		CTRL_X = 24
 		CTRL_Y = 25
 		CTRL_Z = 26

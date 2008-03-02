@@ -6,8 +6,8 @@ end
 
 require 'highline'
 
-require "#{InLine::TEST_HOME}/lib/history_buffer"
-require "#{InLine::TEST_HOME}/lib/line"
+require "#{InLine::TEST_HOME}/lib/inline/history_buffer"
+require "#{InLine::TEST_HOME}/lib/inline/line"
 
 describe InLine::Line do
 
@@ -39,7 +39,7 @@ describe InLine::Line do
 		@line < 4
 		@line.position.should == 0
 		@line > 210
-		@line.position.should == 118 # Default terminal_size()[0]
+		@line.position.should == 118 # Default terminal_size()[0] - prompt.length
 		@line.eol.should == 6
 	end
 

@@ -7,7 +7,7 @@ module InLine
 		include HighLine::SystemExtensions
 		include Mappings
 
-		attr_accessor :history_size, :line_history_size, :keys, :word_separator, :mode, :completion_proc
+		attr_accessor :history_size, :line_history_size, :keys, :word_separator, :mode, :completion_proc, :line, :history, :append_after_completion
 
 		def initialize(input=STDIN, output=STDOUT)
 			@input = input
@@ -41,19 +41,22 @@ module InLine
 				@newline = false
 				@char = get_character(@input)
 				process_character
-				break if @char == ENTER
+				break if @char == ENTER || !@char
 			end
 			puts
 			@line.text
 		end
 
 		def write(string)
-			string.each_byte { |c| print_character c }
+			string.each_byte { |c| print_character c, true }
+			add_to_line_history
 		end
 
 		def process_character
-			if key_bound?: press_key
-			else default_action
+			unless !@char
+				if key_bound?: press_key
+				else default_action
+				end
 			end
 		end
 
@@ -82,7 +85,7 @@ module InLine
 			end
 		end
 
-		def print_character(char=@char)
+		def print_character(char=@char, no_line_history = false)
 			unless @line.length >= @line.max_length-2
 				case
 				when @line.position < @line.length then
@@ -101,7 +104,7 @@ module InLine
 						@line << char 
 					end
 				end
-				add_to_line_history unless char != @char
+				add_to_line_history unless no_line_history
 			end
 		end
 
@@ -135,13 +138,13 @@ module InLine
 			add_to_history
 		end
 
-		def exit_script
+		def quit
 			exit
 		end
 
 		def move_left
 			unless @line.bol?:
-				putc BACKSPACE
+				@output.putc BACKSPACE
 				@line < 1
 				return true
 			end
@@ -151,7 +154,7 @@ module InLine
 		def move_right
 			unless @line.position > @line.eol:
 				@line > 1
-				putc @line.text[@line.position-1]
+				@output.putc @line.text[@line.position-1]
 				return true
 			end
 			false
@@ -161,12 +164,12 @@ module InLine
 			pos = @line.position
 			text = @line.text
 			word = @line.word
-			puts 
-			puts "Text: [#{text}]"
-			puts "Length: #{@line.length}"
-			puts "Position: #{pos}"
-			puts "Character at Position: [#{text[pos].chr}] (#{text[pos]})" unless pos >= @line.length
-			puts "Current Word: [#{word[:text]}] (#{word[:start]} -- #{word[:end]})"
+			@output.puts 
+			@output.puts "Text: [#{text}]"
+			@output.puts "Length: #{@line.length}"
+			@output.puts "Position: #{pos}"
+			@output.puts "Character at Position: [#{text[pos].chr}] (#{text[pos]})" unless pos >= @line.length
+			@output.puts "Current Word: [#{word[:text]}] (#{word[:start]} -- #{word[:end]})"
 			clear_line
 			raw_print text
 			overwrite_line(text, pos)
@@ -175,8 +178,8 @@ module InLine
 		def show_history
 			pos = @line.position
 			text = @line.text
-			puts
-			puts "History:"
+			@output.puts
+			@output.puts "History:"
 			@history.each {|l| puts "- [#{l}]"}
 			overwrite_line(text, pos)
 		end
@@ -185,13 +188,13 @@ module InLine
 			@history.clear
 		end
 
-		def delete_left_character
+		def delete_left_character(no_line_history=false)
 			if move_left then
-				delete_character
+				delete_character(no_line_history)
 			end
 		end
 
-		def delete_character
+		def delete_character(no_line_history=false)
 			unless @line.position > @line.eol
 				# save characters to shift
 				chars = (@line.eol?) ? ' ' : select_characters_from_cursor(1)
@@ -201,17 +204,18 @@ module InLine
 				(chars.length+1).times { putc BACKSPACE }
 				#remove character from line
 				@line[@line.position] = ''
-				add_to_line_history
+				add_to_line_history unless no_line_history
 			end
 		end
 
 		def clear_line
-			putc ENTER
+			@output.putc ENTER
 			raw_print @line.prompt
 			@line.length.times { putc SPACE }
 			@line.length.times { putc BACKSPACE }
-			@clear_line
 			add_to_line_history
+			@line.text = ""
+			@line.position = 0
 		end
 
 		def undo
@@ -219,7 +223,7 @@ module InLine
 			generic_history_back(@line.history)
 		end
 
-		def repeat
+		def redo
 			generic_history_forward(@line.history)
 		end
 
@@ -274,10 +278,6 @@ module InLine
 			@line.text = new_line
 		end
 
-		def select_characters_from_cursor(offset=0)
-			select_characters(:right, @line.length-@line.position, offset)
-		end
-
 		def move_to_position(pos)
 			n = pos-@line.position
 			case
@@ -291,21 +291,21 @@ module InLine
 
 		private
 
+		def select_characters_from_cursor(offset=0)
+			select_characters(:right, @line.length-@line.position, offset)
+		end
+
 		def raw_print(string)
 			string.each_byte { |c| @output.putc c }
 		end
 
 		def complete_word(match)
-			if @line.word[:text].length == 0 then
-				# If not in a word, print the match
-				match.each_byte {|c| print_character c }
-			else
-				# Otherwise continue existing word
+			unless @line.word[:text].length == 0
+				# If not in a word, print the match, otherwise continue existing word
 				move_to_position(@line.word[:end]+1)
-				@line.word[:text].length.times { delete_left_character }
-				# Substitute word with match
-				match.each_byte {|c| print_character c }
+				@line.word[:text].length.times { delete_left_character(true) }
 			end
+			write match
 		end
 
 		def generic_history_back(history)
@@ -333,14 +333,13 @@ module InLine
 		def set_default_keys		
 			bind(ENTER) { newline }
 			bind(TAB) { complete }
-			bind(CTRL_X) { exit_script }
 			bind(BACKSPACE) { delete_left_character }
 			bind(CTRL_K) { clear_line }
 			bind(CTRL_Z) { undo }
-			bind(CTRL_Y) { repeat }
+			bind(CTRL_Y) { self.redo }
 			bind(SPECIAL) do
-				arrow_char = get_character(@input)
-				case arrow_char
+				special_char = get_character(@input)
+				case special_char
 				when LEFT_ARROW: move_left
 				when RIGHT_ARROW: move_right
 				when UP_ARROW: history_back

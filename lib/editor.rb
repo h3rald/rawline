@@ -9,7 +9,9 @@ module InLine
 
 		attr_accessor :history_size, :line_history_size, :keys, :word_separator, :mode, :completion_proc
 
-		def initialize
+		def initialize(input=STDIN, output=STDOUT)
+			@input = input
+			@output = output
 			@history_size = 30
 			@line_history_size = 50
 			@keys = []
@@ -27,8 +29,7 @@ module InLine
 			@newline = true
 		end
 
-		def read(prompt="", input=STDIN)
-			@input = input
+		def read(prompt="")
 			@newline = true
 			@line = Line.new(@line_history_size) do |l| 
 				l.prompt = prompt
@@ -43,7 +44,11 @@ module InLine
 				break if @char == ENTER
 			end
 			puts
-			@line
+			@line.text
+		end
+
+		def write(string)
+			string.each_byte { |c| print_character c }
 		end
 
 		def process_character
@@ -71,16 +76,10 @@ module InLine
 			@keys[@char].call
 		end
 
-		### ACTIONS ###
-
 		def default_action
 			unless key_mapped?
 				print_character
 			end
-		end
-
-		def write(string)
-			string.each_byte { |c| print_character c }
 		end
 
 		def print_character(char=@char)
@@ -88,7 +87,7 @@ module InLine
 				case
 				when @line.position < @line.length then
 					chars = select_characters_from_cursor if @mode == :insert
-					putc char
+					@output.putc char
 					@line.text[@line.position] = (@mode == :insert) ? "#{char.chr}#{@line.text[@line.position].chr}" : "#{char.chr}"
 					@line > 1
 					if @mode == :insert then
@@ -96,7 +95,7 @@ module InLine
 						chars.length.times { putc BACKSPACE } # move cursor back
 					end
 				else
-					putc char
+					@output.putc char
 					@line > 1
 					unless char == SPECIAL then
 						@line << char 
@@ -293,7 +292,7 @@ module InLine
 		private
 
 		def raw_print(string)
-			string.each_byte { |c| putc c }
+			string.each_byte { |c| @output.putc c }
 		end
 
 		def complete_word(match)

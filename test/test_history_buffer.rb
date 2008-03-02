@@ -17,11 +17,20 @@ describe InLine::HistoryBuffer do
 	end
 
 	it "allows items to be added to the history" do
+		@history.duplicates = false
 		@history << "line #1"
 		@history << "line #2"
 		@history << "line #3"
 		@history << "line #2"
 		@history.should == ["line #1", "line #3", "line #2"]
+		@history.duplicates = true
+		@history << "line #3"
+		@history.should == ["line #1", "line #3", "line #2", "line #3"]
+		@history.exclude = lambda { |i| i.match(/line #[456]/) }
+	 	@history << "line #4"
+		@history << "line #5"
+		@history << "line #6"
+		@history.should == ["line #1", "line #3", "line #2", "line #3"]	
 	end
 
 	it "does not overflow" do
@@ -60,6 +69,10 @@ describe InLine::HistoryBuffer do
 		@history.position.should == 4
 		@history.forward
 		@history.position.should == 4
+		@history.cycle = true
+		@history.forward
+		@history.forward
+		@history.position.should == 1
 	end
 
 	it "can retrieve the last element or the element at @position via 'get'" do

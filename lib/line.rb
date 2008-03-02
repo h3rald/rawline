@@ -3,11 +3,11 @@
 module InLine
 	
 	class Line
-		
-		include HighLine::SystemExtensions
 
 		attr_accessor :text, :length, :position, :max_length, :history, :prompt, :history_size, :word_separator
 		attr_reader :offset
+
+		include HighLine::SystemExtensions
 
 		def initialize(history_size)
 			@text = ""

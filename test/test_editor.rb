@@ -127,7 +127,7 @@ describe InLine::Editor do
 	end
 
 	it "can complete words" do
-		@editor.append_after_completion = ""
+		@editor.completion_append_character = "\t"
 		@editor.bind(TAB) { @editor.complete }
 		@editor.completion_proc = lambda do |word|
 	  	if word
@@ -137,7 +137,7 @@ describe InLine::Editor do
 		@input << "test #9 de" << TAB.chr << TAB.chr
 		@input.rewind
 		@editor.read
-		@editor.line.text.should == "test #9 delete"
+		@editor.line.text.should == "test #9 delete\t"
 	end
 
 	it "supports INSERT and REPLACE modes" do

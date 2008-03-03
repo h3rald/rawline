@@ -1,14 +1,56 @@
-#!/usr/bin/ruby
+#!/usr/local/bin/ruby -w
+
+#
+#	editor.rb
+#
+# Created by Fabio Cevasco on 2008-03-03.
+# Copyright (c) 2008 Fabio Cevasco. All rights reserved.
+#
+# This is Free Software.  See LICENSE for details.
+#
 
 module InLine
 
+	# 
+	# The Editor class defines methods to:
+	#
+	# * Read characters from STDIN or any type of input
+	# * Write characters to STDOUT or any type of output
+	# * Bind keys to specific actions
+	# * Perform line-related operations like moving, navigating through history, etc.
+	# 
+	# Note that the following default key bindings are provided:
+	#
+	# * TAB: word completion defined via completion_proc()
+	# * LEFT/RIGHT ARROWS: cursor movement (left/right)
+	# * UP/DOWN ARROWS: history navigation
+	# * DEL: Delete character under cursor
+	# * BACKSPACE: Delete character before cursor
+	# * INSERT: Toggle insert/replace mode (default: insert)
+	# * CTRL+K: Clear the whole line
+	# * CTRL+Z: undo
+	# * CTRL+Y: redo
+	#
 	class Editor
 
 		include HighLine::SystemExtensions
 		include Mappings
 
-		attr_accessor :history_size, :line_history_size, :keys, :word_separator, :mode, :completion_proc, :line, :history, :append_after_completion
+		attr_accessor :history_size, :line_history_size, :keys, :word_separator, :mode, :completion_proc, :line, :history, :completion_append_character
 
+		# 
+		# Create an instance of InLine::Editor which can be used 
+		# to read from input and perform line-editing operations.
+		# It takes an optional block used to override the following instance attributes:
+		# * <tt>@history_size</tt>
+		# * <tt>@line_history_size</tt>
+		# * <tt>@keys</tt>
+		# * <tt>@word_separator</tt>
+		# * <tt>@mode</tt>
+		# * <tt>@completion_proc</tt>
+		# * <tt>@completion_append_character</tt>
+		# * <tt>@completion_matches</tt>
+		#
 		def initialize(input=STDIN, output=STDOUT)
 			@input = input
 			@output = output
@@ -18,6 +60,7 @@ module InLine
 			@word_separator = ' '
 			@mode = :insert
 			@completion_proc = []
+			@completion_append_character = " "
 			@completion_matches = HistoryBuffer.new(0) { |h| h.duplicates = false; h.cycle = true }
 			set_default_keys
 			yield self if block_given?
@@ -28,7 +71,12 @@ module InLine
 			@char = nil
 			@newline = true
 		end
-
+		
+		# 
+		# Read characters from <tt>@input</tt> until the user presses ENTER 
+		# (use it in the same way as you'd use IO#gets)
+		# An optional prompt can be specified to be printed at the beginning of the line.
+		#
 		def read(prompt="")
 			@newline = true
 			@line = Line.new(@line_history_size) do |l| 
@@ -47,11 +95,21 @@ module InLine
 			@line.text
 		end
 
+		# 
+		# Write a string to <tt>@output</tt> starting from the cursor position. 
+		# Characters at the right of the cursor are shifted to the right if 
+		# <tt>@mode == :insert</tt>, deleted otherwise.
+		#
 		def write(string)
 			string.each_byte { |c| print_character c, true }
 			add_to_line_history
 		end
 
+		#
+		# Process a character. If the key corresponding to the inputted character
+		# is bound to an action, call <tt>press_key</tt>, otherwise call <tt>default_action</tt>.
+		# This method is called automatically by <tt>read()</tt>
+		#
 		def process_character
 			unless !@char
 				if key_bound?: press_key
@@ -60,14 +118,23 @@ module InLine
 			end
 		end
 
+		#
+		# Bind a key (identified via its ASCII code) to an action specified via <tt>block</tt>.
+		#
 		def bind(key, &block)
 			@keys[key] = block
 		end
 
+		# 
+		# Return true if the last character read via <tt>read()</tt> is bound to an action.
+		#
 		def key_bound?
 			@keys[@char] ? true : false
 		end
 
+		# 
+		# Return true if the last character read via <tt>read()</tt> is mapped in InLine::Mappings.
+		#
 		def key_mapped?
 			Mappings.constants.each do |c| 
 				return true if (Mappings.const_get(:"#{c}") == ("#{@char}"))
@@ -75,16 +142,31 @@ module InLine
 			false
 		end
 
+		# 
+		# Call the action bound to the last character read via <tt>read()</tt>.
+		# This method is called automatically by <tt>process_character()</tt>.
+		#
 		def press_key
 			@keys[@char].call
 		end
 
+		# 
+		# Execute the default action for the last character read via <tt>read()</tt>. 
+		# By default it prints the character to the screen via <tt>print_character()</tt> if is not mapped.
+		# This method is called automatically by <tt>process_character()</tt>.
+		#
 		def default_action
 			unless key_mapped?
 				print_character
 			end
 		end
 
+		#
+		# Write a character to <tt>@output</tt> at cursor position, 
+		# shifting characters as appropriate.
+		# If <tt>no_line_history</tt> is set to <tt>true</tt>, the updated
+		# won't be saved in the history of the current line.
+		#
 		def print_character(char=@char, no_line_history = false)
 			unless @line.length >= @line.max_length-2
 				case
@@ -107,41 +189,72 @@ module InLine
 				add_to_line_history unless no_line_history
 			end
 		end
-
+		
+		# 
+		# Complete the current word according to what returned by
+		# <tt>@completion_proc</tt>. Characters can be appended to the 
+		# completed word via <tt>@completion_append_character</tt> and word
+		# separators can be defined via <tt>@word_separator</tt>.
+		#
+		# This action is bound to TAB by default, so the first
+		# match is displayed the first time the user presses TAB, and all
+		# the possible messages will be displayed (cyclically) when TAB is
+		# pressed again. 
+		# 
 		def complete
 			completion_char = @char
-			pos = @line.position
 			@completion_matches.clear
+			word_start = @line.word[:start]
 			sub_word = @line.text[@line.word[:start]..@line.position-1] || ""
 			matches  = @completion_proc.call(sub_word)
 			matches = (matches.is_a?(Array)) ? matches.sort.reverse : []
+			complete_word = lambda do |match|
+				unless @line.word[:text].length == 0
+					# If not in a word, print the match, otherwise continue existing word
+					move_to_position(@line.word[:end]+@completion_append_character.length+1)
+				end
+				(@line.position-word_start).times { delete_left_character(true) }
+				write match+@completion_append_character
+			end
 			unless matches.empty? then
 				@completion_matches.resize(matches.length) 
 				matches.each { |w| @completion_matches << w }
 				# Get first match
 				@completion_matches.back
 				match = @completion_matches.get
-				complete_word(match)
+				complete_word.call(match)
 				@char = get_character(@input)
 				while @char == completion_char do
-					move_to_position(pos)
+					move_to_position(word_start)
 					@completion_matches.back
 					match = @completion_matches.get
-					complete_word(match)
+					complete_word.call(match)
 					@char = get_character(@input)
 				end
 				process_character
 			end
 		end
 
+		# 
+		# Adds the current line to the editor history. This action is 
+		# bound to the ENTER key by default.
+		#
 		def newline
 			add_to_history
 		end
 
+		#
+		# Quit the script calling <tt>Kernel#exit</tt>.
+		#
 		def quit
 			exit
 		end
 
+		# 
+		# Move the cursor left (if possible) by printing a 
+		# BACKSPACE, updating <tt>@line.position</tt> accordingly.
+		# This action is bound to LEFT_ARROW by default. 
+		#
 		def move_left
 			unless @line.bol?:
 				@output.putc BACKSPACE
@@ -150,7 +263,13 @@ module InLine
 			end
 			false
 		end
-
+		
+		# 
+		# Move the cursor right (if possible) by re-printing the
+		# character at the right of the cursor, if any, and updating
+		# <tt>@line.position</tt> accordingly. 
+		# This action is bound to RIGHT_ARROW by default.
+		#
 		def move_right
 			unless @line.position > @line.eol:
 				@line > 1
@@ -297,15 +416,6 @@ module InLine
 
 		def raw_print(string)
 			string.each_byte { |c| @output.putc c }
-		end
-
-		def complete_word(match)
-			unless @line.word[:text].length == 0
-				# If not in a word, print the match, otherwise continue existing word
-				move_to_position(@line.word[:end]+1)
-				@line.word[:text].length.times { delete_left_character(true) }
-			end
-			write match
 		end
 
 		def generic_history_back(history)

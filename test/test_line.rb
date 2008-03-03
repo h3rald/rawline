@@ -38,8 +38,8 @@ describe InLine::Line do
 		@line.position.should == 1
 		@line < 4
 		@line.position.should == 0
-		@line > 210
-		@line.position.should == 118 # Default terminal_size()[0] - prompt.length
+		@line > HighLine::SystemExtensions.terminal_size()[0]+10
+		@line.position.should == HighLine::SystemExtensions.terminal_size()[0]-2
 		@line.eol.should == 6
 	end
 

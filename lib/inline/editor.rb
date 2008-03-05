@@ -64,7 +64,7 @@ module InLine
 			@completion_matches = HistoryBuffer.new(0) { |h| h.duplicates = false; h.cycle = true }
 			set_default_keys
 			yield self if block_given?
-			@history = InLine::HistoryBuffer.new(@history_size) do |h| 
+			@history = HistoryBuffer.new(@history_size) do |h| 
 				h.duplicates = false; 
 				h.exclude = lambda { |item| item.strip == "" }
 			end
@@ -236,18 +236,11 @@ module InLine
 		end
 
 		# 
-		# Adds the current line to the editor history. This action is 
+		# Adds <tt>@line.text</tt> to the editor history. This action is 
 		# bound to the ENTER key by default.
 		#
 		def newline
 			add_to_history
-		end
-
-		#
-		# Quit the script calling <tt>Kernel#exit</tt>.
-		#
-		def quit
-			exit
 		end
 
 		# 
@@ -279,6 +272,10 @@ module InLine
 			false
 		end
 
+		#
+		# Print debug information about the current line. Note that after
+		# the message is displayed, the line text and position will be restored.
+		#
 		def debug_line
 			pos = @line.position
 			text = @line.text
@@ -294,6 +291,10 @@ module InLine
 			overwrite_line(text, pos)
 		end
 
+		#
+		# Print the content of the editor history. Note that after
+		# the message is displayed, the line text and position will be restored.
+		#
 		def show_history
 			pos = @line.position
 			text = @line.text
@@ -303,16 +304,31 @@ module InLine
 			overwrite_line(text, pos)
 		end
 
+		# 
+		# Clear the editor history.
+		#
 		def clear_history
 			@history.clear
 		end
 
+		# 
+		# Delete the character at the left of the cursor. 
+		# If <tt>no_line_hisytory</tt> is set to true, the deletion won't be
+		# recorded in the line history.
+		# This action is bound to BACKSPACE by default.
+		#
 		def delete_left_character(no_line_history=false)
 			if move_left then
 				delete_character(no_line_history)
 			end
 		end
 
+		# 
+		# Delete the character under the cursor. 
+		# If <tt>no_line_hisytory</tt> is set to true, the deletion won't be
+		# recorded in the line history.
+		# This action is bound to DEL by default.
+		#
 		def delete_character(no_line_history=false)
 			unless @line.position > @line.eol
 				# save characters to shift
@@ -327,6 +343,11 @@ module InLine
 			end
 		end
 
+		# 
+		# Clear the current line, i.e. 
+		# <tt>@line.text</tt> and <tt>@line.position</tt>.
+		# This action is bound to CTRL_K by default.
+		#
 		def clear_line
 			@output.putc ENTER
 			raw_print @line.prompt
@@ -337,15 +358,29 @@ module InLine
 			@line.position = 0
 		end
 
+		# 
+		# Undo the last modification to the current line (<tt>@line.text</tt>).
+		# This action is bound to CTRL_Z by default.
+		#
 		def undo
 			generic_history_back(@line.history) if @line.history.position == nil
 			generic_history_back(@line.history)
 		end
 
+		# 
+		# Redo a previously-undone modification to the 
+		# current line (<tt>@line.text</tt>).
+		# This action is bound to CTRL_Y by default.
+		#
 		def redo
 			generic_history_forward(@line.history)
 		end
 
+		# 
+		# Load the previous entry of the editor in place of the 
+		# current line (<tt>@line.text</tt>).
+		# This action is bound to UP_ARROW by default.
+		#
 		def history_back
 			unless @history.position
 				current_line = @line.text.dup
@@ -361,19 +396,35 @@ module InLine
 			add_to_line_history
 		end
 
+		# 
+		# Load the next entry of the editor history in place of the 
+		# current line (<tt>@line.text</tt>).
+		# This action is bound to DOWN_ARROW by default.
+		#
 		def history_forward
 			generic_history_forward(@history)
 			add_to_line_history
 		end
 
+		# 
+		# Add the current line (<tt>@line.text</tt>) to the 
+		# line history, to allow undo/redo 
+		# operations.
+		#
 		def add_to_line_history
 			@line.history << @line.text.dup unless @line.text == ""
 		end
 
+		#
+		# Add the current line (<tt>@line.text</tt>) to the editor history.
+		#
 		def add_to_history
 			@history << @line.text.dup unless @line.text == ""
 		end
 
+		# 
+		# Toggle the editor <tt>@mode</tt> to :replace or :insert (default).
+		#
 		def toggle_mode
 			case @mode
 			when :insert then @mode = :replace
@@ -381,6 +432,11 @@ module InLine
 			end
 		end
 
+		#
+		# Overwrite the current line (<tt>@line.text</tt>) 
+		# with <tt>new_line</tt>, and optionally reset the cursor position to
+		# <tt>position</tt>.
+		#
 		def overwrite_line(new_line, position=nil)
 			pos = position || new_line.length
 			text = @line.text
@@ -397,6 +453,9 @@ module InLine
 			@line.text = new_line
 		end
 
+		# 
+		# Move the cursor to <tt>pos</tt>.
+		#
 		def move_to_position(pos)
 			n = pos-@line.position
 			case

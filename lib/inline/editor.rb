@@ -50,13 +50,20 @@ module InLine
 		# * <tt>@completion_proc</tt>
 		# * <tt>@completion_append_character</tt>
 		# * <tt>@completion_matches</tt>
+		# TODO terminal
 		#
 		def initialize(input=STDIN, output=STDOUT)
 			@input = input
 			@output = output
+			case PLATFORM
+			when /win32/i then
+				@terminal = WindowsTerminal.new
+			else
+				@terminal = VT220Terminal.new
+			end
 			@history_size = 30
 			@line_history_size = 50
-			@keys = []
+			@keys = {}
 			@word_separator = ' '
 			@mode = :insert
 			@completion_proc = []
@@ -87,12 +94,19 @@ module InLine
 			loop do
 				print prompt if @newline
 				@newline = false
-				@char = get_character(@input)
+				read_character
 				process_character
-				break if @char == ENTER || !@char
+				break if @char == [RETURN] || !@char
 			end
 			puts
 			@line.text
+		end
+
+		# TODO
+
+		def read_character
+			c = get_character(@input)
+			@char = @terminal.send_key(c) || c
 		end
 
 		# 
@@ -111,18 +125,37 @@ module InLine
 		# This method is called automatically by <tt>read()</tt>
 		#
 		def process_character
-			unless !@char
-				if key_bound?: press_key
-				else default_action
-				end
+			case @char.class.to_s
+			when 'Fixnum' then
+				default_action
+			when 'Array'
+				press_key if key_bound?
 			end
 		end
 
 		#
 		# Bind a key (identified via its ASCII code) to an action specified via <tt>block</tt>.
+		# TODO: refactoring
 		#
 		def bind(key, &block)
-			@keys[key] = block
+			case key.class.to_s
+			when 'Symbol' then
+				raise BindingException, "Unknown key or key sequence '#{key.to_s}' (#{key.class.to_s})" unless @terminal.keys[key]
+				@keys[@terminal.keys[key]] = block
+			when 'Array' then
+				raise BindingException, "Unknown key or key sequence '#{key.join(", ")}' (#{key.class.to_s})" unless @terminal.keys.has_value? key
+				@keys[key] = block
+			when 'Fixnum' then
+				raise BindingException, "Unknown key or key sequence '#{key.to_s}' (#{key.class.to_s})" unless @terminal.keys.has_value? key
+				@keys[[key]] = block
+			when 'String' then
+				raise BindingException, "Unknown key or key sequence '#{key.to_s}' (#{key.class.to_s})" unless @terminal.keys.has_value? key_array
+				key_array = []
+				key.each_byte { |b| key_array << b }
+				@keys[key_array] = block
+			else
+				raise BindingException, "Unable to bind '#{key.to_s}' (#{key.class.to_s})"
+			end
 		end
 
 		# 
@@ -130,16 +163,6 @@ module InLine
 		#
 		def key_bound?
 			@keys[@char] ? true : false
-		end
-
-		# 
-		# Return true if the last character read via <tt>read()</tt> is mapped in InLine::Mappings.
-		#
-		def key_mapped?
-			Mappings.constants.each do |c| 
-				return true if (Mappings.const_get(:"#{c}") == ("#{@char}"))
-			end
-			false
 		end
 
 		# 
@@ -152,13 +175,11 @@ module InLine
 
 		# 
 		# Execute the default action for the last character read via <tt>read()</tt>. 
-		# By default it prints the character to the screen via <tt>print_character()</tt> if is not mapped.
+		# By default it prints the character to the screen via <tt>print_character()</tt>.
 		# This method is called automatically by <tt>process_character()</tt>.
 		#
 		def default_action
-			unless key_mapped?
-				print_character
-			end
+			print_character
 		end
 
 		#
@@ -166,6 +187,8 @@ module InLine
 		# shifting characters as appropriate.
 		# If <tt>no_line_history</tt> is set to <tt>true</tt>, the updated
 		# won't be saved in the history of the current line.
+		#
+		# TODO
 		#
 		def print_character(char=@char, no_line_history = false)
 			unless @line.length >= @line.max_length-2
@@ -177,14 +200,12 @@ module InLine
 					@line > 1
 					if @mode == :insert then
 						raw_print chars
-						chars.length.times { putc BACKSPACE } # move cursor back
+						chars.length.times { putc ?\b } # move cursor back
 					end
 				else
 					@output.putc char
 					@line > 1
-					unless char == SPECIAL then
-						@line << char 
-					end
+					@line << char 
 				end
 				add_to_line_history unless no_line_history
 			end
@@ -223,13 +244,13 @@ module InLine
 				@completion_matches.back
 				match = @completion_matches.get
 				complete_word.call(match)
-				@char = get_character(@input)
+				read_character
 				while @char == completion_char do
 					move_to_position(word_start)
 					@completion_matches.back
 					match = @completion_matches.get
 					complete_word.call(match)
-					@char = get_character(@input)
+					read_character
 				end
 				process_character
 			end
@@ -250,7 +271,7 @@ module InLine
 		#
 		def move_left
 			unless @line.bol?:
-				@output.putc BACKSPACE
+				@output.putc ?\b
 				@line < 1
 				return true
 			end
@@ -335,8 +356,8 @@ module InLine
 				chars = (@line.eol?) ? ' ' : select_characters_from_cursor(1)
 				# remove character from console and shift characters
 				raw_print chars
-				putc SPACE
-				(chars.length+1).times { putc BACKSPACE }
+				putc ?\s
+				(chars.length+1).times { putc ?\b }
 				#remove character from line
 				@line[@line.position] = ''
 				add_to_line_history unless no_line_history
@@ -349,10 +370,10 @@ module InLine
 		# This action is bound to CTRL_K by default.
 		#
 		def clear_line
-			@output.putc ENTER
+			@output.putc ?\r
 			raw_print @line.prompt
-			@line.length.times { putc SPACE }
-			@line.length.times { putc BACKSPACE }
+			@line.length.times { putc ?\s }
+			@line.length.times { putc ?\b }
 			add_to_line_history
 			@line.text = ""
 			@line.position = 0
@@ -440,13 +461,13 @@ module InLine
 		def overwrite_line(new_line, position=nil)
 			pos = position || new_line.length
 			text = @line.text
-			putc ENTER
+			putc ?\r
 			raw_print @line.prompt
 			raw_print new_line
 			n = text.length-new_line.length+1
 			if n > 0
-				n.times { putc SPACE } 
-				n.times { putc BACKSPACE }
+				n.times { putc ?\s } 
+				n.times { putc ?\b }
 			end
 			@line.position = new_line.length
 			move_to_position(pos)		
@@ -500,24 +521,18 @@ module InLine
 		end
 
 		def set_default_keys		
-			bind(ENTER) { newline }
-			bind(TAB) { complete }
-			bind(BACKSPACE) { delete_left_character }
-			bind(CTRL_K) { clear_line }
-			bind(CTRL_Z) { undo }
-			bind(CTRL_Y) { self.redo }
-			bind(SPECIAL) do
-				special_char = get_character(@input)
-				case special_char
-				when LEFT_ARROW: move_left
-				when RIGHT_ARROW: move_right
-				when UP_ARROW: history_back
-				when DOWN_ARROW: history_forward
-				when DEL: delete_character
-				when INSERT: toggle_mode 
-				else nil
-				end
-			end
+			bind(:return) { newline }
+			bind(:tab) { complete }
+			bind(:backspace) { delete_left_character }
+			bind(:ctrl_k) { clear_line }
+			bind(:ctrl_z) { undo }
+			bind(:ctrl_y) { self.redo }
+			bind(:left_arrow) { move_left }
+			bind(:right_arrow) { move_right }
+			bind(:up_arrow) { history_back }
+			bind(:down_arrow) { history_forward }
+			bind(:delete) { delete_character }
+			bind(:insert) { toggle_mode }
 		end
 
 	end

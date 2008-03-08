@@ -9,7 +9,7 @@ module InLine
 			@escape_codes = [?\e]
 			@keys.merge!(
 				{
-					:up_arrow => [?\e, ?[, ?C],
+					:up_arrow => [?\e, ?[, ?A],
 					:down_arrow => [?\e, ?[, ?B],
 					:right_arrow => [?\e, ?[, ?C],
 					:left_arrow => [?\e, ?[, ?D],

@@ -11,10 +11,10 @@ puts " * Press CTRL+E to view command history"
 
 editor = InLine::Editor.new
 
-editor.bind(CTRL_C) { editor.clear_history }
-editor.bind(CTRL_D) { editor.debug_line }
-editor.bind(CTRL_E) { editor.show_history }
-editor.bind(CTRL_X) { puts; puts "Exiting..."; exit }
+editor.bind(:ctrl_c) { editor.clear_history }
+editor.bind(:ctrl_d) { editor.debug_line }
+editor.bind(:ctrl_e) { editor.show_history }
+editor.bind(:ctrl_x) { puts; puts "Exiting..."; exit }
 
 editor.completion_proc = lambda do |word|
 	if word

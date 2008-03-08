@@ -153,9 +153,16 @@ module InLine
 				key_array = []
 				key.each_byte { |b| key_array << b }
 				@keys[key_array] = block
+			when 'Hash' then
+				raise BindingException, "Cannot bind more than one key or key sequence at once" unless key.values.length == 1
+				key.each_pair do |j,k|
+					@terminal.keys[j] = k
+					@keys[k] = block
+				end
 			else
 				raise BindingException, "Unable to bind '#{key.to_s}' (#{key.class.to_s})"
 			end
+			@terminal.update
 		end
 
 		# 

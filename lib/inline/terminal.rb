@@ -11,12 +11,23 @@ module InLine
 
 		attr_accessor :escape_codes, :keys
 
-		def initialize(max_sequence_length=11)
+		def initialize
 			@escape_codes = []
 			@keys = {}
-			@max_sequence_length = max_sequence_length
+			@escape_sequences = []
+			@max_sequence_length = 1
 			Mappings.constants.each do |c| 
-				@keys[:"#{c.downcase}"] = Mappings.const_get(:"#{c}")
+				@keys[:"#{c.downcase}"] = [Mappings.const_get(:"#{c}")]
+			end
+		end
+
+		def update
+			@keys.each_value do |k|
+				l = k.length
+				if  l > 1 then
+					@escape_sequences << k
+					@max_sequence_length = l if l > @max_sequence_length
+				end
 			end
 		end
 
@@ -26,12 +37,12 @@ module InLine
 				loop do
 					c = get_character
 					sequence << c
-					return sequence if @keys.has_value? sequence
+					return sequence if @escape_sequences.include? sequence
 					break if sequence.length > @max_sequence_length
 				end
+			else
+				return (@keys.has_value? [code]) ? [code] : nil
 			end
-			return [code] if @keys.has_value? code
-			return nil
 		end
 
 	end

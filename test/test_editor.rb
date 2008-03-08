@@ -17,6 +17,9 @@ require 'stringio'
 require "#{InLine::TEST_HOME}/lib/inline/history_buffer"
 require "#{InLine::TEST_HOME}/lib/inline/line"
 require "#{InLine::TEST_HOME}/lib/inline/mappings"
+require "#{InLine::TEST_HOME}/lib/inline/terminal"
+require "#{InLine::TEST_HOME}/lib/inline/terminals/windows_terminal"
+require "#{InLine::TEST_HOME}/lib/inline/terminals/vt220_terminal"
 require "#{InLine::TEST_HOME}/lib/inline/editor"
 
 include InLine::Mappings

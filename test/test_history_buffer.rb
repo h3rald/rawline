@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/local/bin/ruby -w
 
 module InLine
 	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
@@ -102,7 +102,7 @@ describe InLine::HistoryBuffer do
 		@history.position.should == nil
 		@history << "line #6"
 		@history.get.should == "line #6"
-		@history.clear
+		@history.empty
 		@history.should == []
 		@history.size.should == 6
 		@history.position.should == nil

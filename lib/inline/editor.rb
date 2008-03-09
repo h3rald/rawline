@@ -28,15 +28,14 @@ module InLine
 	# * BACKSPACE: Delete character before cursor
 	# * INSERT: Toggle insert/replace mode (default: insert)
 	# * CTRL+K: Clear the whole line
-	# * CTRL+Z: undo
-	# * CTRL+Y: redo
+	# * CTRL+Z: undo (unless already registered by the OS)
+	# * CTRL+Y: redo (unless already registered by the OS)
 	#
 	class Editor
 
 		include HighLine::SystemExtensions
-		include Mappings
 
-		attr_accessor :history_size, :line_history_size, :keys, :word_separator, :mode, :completion_proc, :line, :history, :completion_append_character
+		attr_accessor :char, :history_size, :line_history_size, :terminal, :keys, :word_separator, :mode, :completion_proc, :line, :history, :completion_append_character
 
 		# 
 		# Create an instance of InLine::Editor which can be used 
@@ -50,7 +49,7 @@ module InLine
 		# * <tt>@completion_proc</tt>
 		# * <tt>@completion_append_character</tt>
 		# * <tt>@completion_matches</tt>
-		# TODO terminal
+		# * <tt>@terminal</tt>
 		#
 		def initialize(input=STDIN, output=STDOUT)
 			@input = input
@@ -96,17 +95,39 @@ module InLine
 				@newline = false
 				read_character
 				process_character
-				break if @char == [RETURN] || !@char
+				break if @char == @terminal.keys[:enter] || !@char
 			end
 			puts
 			@line.text
 		end
 
-		# TODO
-
+		# 
+		# Read and parse a character from <tt>@input</tt>.
+		# This method is called automatically by <tt>read()</tt>
+		#
 		def read_character
 			c = get_character(@input)
-			@char = @terminal.send_key(c) || c
+			@char = parse_key_code(c) || c
+		end
+
+		#
+		#	Parse a key or key sequence into the corresponding codes.
+		# This method is called automatically by <tt>read_character()</tt>
+		#
+		def parse_key_code(code)
+			if @terminal.escape_codes.include? code then
+				sequence = [code]
+				seqs = []
+				loop do
+					c = get_character(@input)
+					sequence << c
+					seqs = @terminal.escape_sequences.select { |e| e[0..sequence.length-1] == sequence }
+					break if seqs.empty?
+					return sequence if [sequence] == seqs
+				end
+			else
+				return (@terminal.keys.has_value? [code]) ? [code] : nil
+			end
 		end
 
 		# 
@@ -134,9 +155,22 @@ module InLine
 		end
 
 		#
-		# Bind a key (identified via its ASCII code) to an action specified via <tt>block</tt>.
-		# TODO: refactoring
+		# Bind a key to an action specified via <tt>block</tt>.
+		# <tt>key</tt> can be:
 		#
+		# * A Symbol identifying a character or character sequence defined for the current terminal
+		# * A Fixnum identifying a character defined for the current terminal
+		# * An Array identifying a character or character sequence defined for the current terminal
+		# * A String identifying a character or character sequence defined for the current terminal
+		# * An Hash identifying a character or character sequence, even if it is not defined for the current terminal
+		#
+		# If <tt>key</tt> is a has, then:
+		#
+		# * It must contain only one key/value pair
+		# * The key identifies the name of the character or character sequence
+		# * The value identifies the code(s) corresponding to the character or character sequence
+		# * The value can be a Fixnum, a String or an Array.
+		# 
 		def bind(key, &block)
 			case key.class.to_s
 			when 'Symbol' then
@@ -146,7 +180,7 @@ module InLine
 				raise BindingException, "Unknown key or key sequence '#{key.join(", ")}' (#{key.class.to_s})" unless @terminal.keys.has_value? key
 				@keys[key] = block
 			when 'Fixnum' then
-				raise BindingException, "Unknown key or key sequence '#{key.to_s}' (#{key.class.to_s})" unless @terminal.keys.has_value? key
+				raise BindingException, "Unknown key or key sequence '#{key.to_s}' (#{key.class.to_s})" unless @terminal.keys.has_value? [key]
 				@keys[[key]] = block
 			when 'String' then
 				raise BindingException, "Unknown key or key sequence '#{key.to_s}' (#{key.class.to_s})" unless @terminal.keys.has_value? key_array
@@ -156,8 +190,20 @@ module InLine
 			when 'Hash' then
 				raise BindingException, "Cannot bind more than one key or key sequence at once" unless key.values.length == 1
 				key.each_pair do |j,k|
-					@terminal.keys[j] = k
-					@keys[k] = block
+					raise BindingException, "'#{k[0].chr}' is not a legal escape code for '#{@terminal.class.to_s}'." unless k.length > 1 && @terminal.escape_codes.include?(k[0])
+					code = []
+					case k.class.to_s
+					when 'Fixnum' then
+						code = [k]
+					when 'String' then
+						k.each_byte { |b| code << b }
+					when 'Array' then
+						code = k
+					else
+						raise BindingException, "Unable to bind '#{k.to_s}' (#{k.class.to_s})"
+					end
+					@terminal.keys[j] = code
+					@keys[code] = block
 				end
 			else
 				raise BindingException, "Unable to bind '#{key.to_s}' (#{key.class.to_s})"
@@ -195,8 +241,6 @@ module InLine
 		# If <tt>no_line_history</tt> is set to <tt>true</tt>, the updated
 		# won't be saved in the history of the current line.
 		#
-		# TODO
-		#
 		def print_character(char=@char, no_line_history = false)
 			unless @line.length >= @line.max_length-2
 				case
@@ -204,14 +248,14 @@ module InLine
 					chars = select_characters_from_cursor if @mode == :insert
 					@output.putc char
 					@line.text[@line.position] = (@mode == :insert) ? "#{char.chr}#{@line.text[@line.position].chr}" : "#{char.chr}"
-					@line > 1
+					@line.right
 					if @mode == :insert then
 						raw_print chars
 						chars.length.times { putc ?\b } # move cursor back
 					end
 				else
 					@output.putc char
-					@line > 1
+					@line.right
 					@line << char 
 				end
 				add_to_line_history unless no_line_history
@@ -231,7 +275,7 @@ module InLine
 		# 
 		def complete
 			completion_char = @char
-			@completion_matches.clear
+			@completion_matches.empty
 			word_start = @line.word[:start]
 			sub_word = @line.text[@line.word[:start]..@line.position-1] || ""
 			matches  = @completion_proc.call(sub_word)
@@ -279,7 +323,7 @@ module InLine
 		def move_left
 			unless @line.bol?:
 				@output.putc ?\b
-				@line < 1
+				@line.left
 				return true
 			end
 			false
@@ -293,7 +337,7 @@ module InLine
 		#
 		def move_right
 			unless @line.position > @line.eol:
-				@line > 1
+				@line.right
 				@output.putc @line.text[@line.position-1]
 				return true
 			end
@@ -336,7 +380,7 @@ module InLine
 		# Clear the editor history.
 		#
 		def clear_history
-			@history.clear
+			@history.empty
 		end
 
 		# 

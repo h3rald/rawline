@@ -1,10 +1,10 @@
-#!/usr/bin/ruby
+#!/usr/local/bin/ruby -w
 
 module InLine
 	
 	class Line
 
-		attr_accessor :text, :length, :position, :max_length, :history, :prompt, :history_size, :word_separator
+		attr_accessor :text, :position, :history, :prompt, :history_size, :word_separator
 		attr_reader :offset
 
 		include HighLine::SystemExtensions
@@ -18,6 +18,7 @@ module InLine
 			yield self if block_given?
 			@words = []
 			@history = InLine::HistoryBuffer.new(@history_size)
+			@history << "" # Add empty line for complete undo...
 			@offset = @prompt.length
 		end
 
@@ -66,11 +67,11 @@ module InLine
 			@position>=eol
 		end
 
-		def <(offset)
+		def left(offset=1)
 			@position = (@position-offset <= 0) ? 0 : @position-offset
 		end
 
-		def >(offset)
+		def right(offset=1)
 			@position = (@position+offset >= max_length) ? max_length : @position+offset
 		end
 

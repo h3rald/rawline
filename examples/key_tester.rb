@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/local/bin/ruby -w
 
 require 'rubygems'
 require 'highline/system_extensions'

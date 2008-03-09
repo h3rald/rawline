@@ -1,7 +1,6 @@
-#!/usr/bin/ruby
+#!/usr/local/bin/ruby -w
 
-require '../lib/inline'
-include InLine::Mappings
+require File.dirname(File.expand_path(__FILE__))+'/../lib/inline'
 
 puts "*** Inline Editor Test Shell ***"
 puts " * Press CTRL+X to exit"

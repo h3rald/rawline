@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/local/bin/ruby -w
 
 module InLine
 	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
@@ -14,15 +14,7 @@ module HighLine::SystemExtensions
 end
 
 require 'stringio'
-require "#{InLine::TEST_HOME}/lib/inline/history_buffer"
-require "#{InLine::TEST_HOME}/lib/inline/line"
-require "#{InLine::TEST_HOME}/lib/inline/mappings"
-require "#{InLine::TEST_HOME}/lib/inline/terminal"
-require "#{InLine::TEST_HOME}/lib/inline/terminals/windows_terminal"
-require "#{InLine::TEST_HOME}/lib/inline/terminals/vt220_terminal"
-require "#{InLine::TEST_HOME}/lib/inline/editor"
-
-include InLine::Mappings
+require "#{InLine::TEST_HOME}/lib/inline"
 
 describe InLine::Editor do
 
@@ -30,11 +22,6 @@ describe InLine::Editor do
 		@output = StringIO.new
 		@input = StringIO.new
 		@editor = InLine::Editor.new(@input, @output)
-	end
-
-	def type(string)
-
-
 	end
 
 	it "reads raw characters from @input" do
@@ -46,11 +33,26 @@ describe InLine::Editor do
 	end
 
 	it "can bind keys to code blocks" do
-		@editor.bind(CTRL_W) { @editor.write "test #2" }
-		@input << CTRL_W.chr
+		@editor.bind(:ctrl_w) { @editor.write "test #2a" }
+		@editor.bind(?\C-q) { "test #2b" }
+		@editor.bind(21) { "test #2c" }
+		@editor.bind([22]) { "test #2d" }
+		@editor.terminal.escape_codes = [] # remove any existing escape codes
+		lambda {@editor.bind({:test => [?\e, ?t, ?e, ?s, ?t]}) { "test #2e" }}.should raise_error(InLine::BindingException)
+		@editor.terminal.escape_codes << ?\e
+		lambda {@editor.bind({:test => "\etest"}) { "test #2e" }}.should_not raise_error(InLine::BindingException)
+		@input << ?\C-w.chr
 		@input.rewind
-		@editor.read
-		@output.string.should == "test #2"
+	 	@editor.read
+		@editor.line.text.should == "test #2a"
+		@editor.char = [?\C-q]
+		@editor.press_key.should == "test #2b"
+		@editor.char = [?\C-u]
+		@editor.press_key.should == "test #2c"
+		@editor.char = [?\C-v]
+		@editor.press_key.should == "test #2d"
+		@editor.char = [?\e, ?t, ?e, ?s, ?t]
+		@editor.press_key.should == "test #2e"
 	end
 
 	it "keeps track of the cursor position" do
@@ -131,35 +133,33 @@ describe InLine::Editor do
 
 	it "can complete words" do
 		@editor.completion_append_character = "\t"
-		@editor.bind(TAB) { @editor.complete }
+		@editor.bind(:tab) { @editor.complete }
 		@editor.completion_proc = lambda do |word|
 	  	if word
  				['select', 'update', 'delete', 'debug', 'destroy'].find_all	{ |e| e.match(/^#{Regexp.escape(word)}/) }
 			end
 		end
-		@input << "test #9 de" << TAB.chr << TAB.chr
+		@input << "test #9 de" << ?\t.chr << ?\t.chr
 		@input.rewind
 		@editor.read
 		@editor.line.text.should == "test #9 delete\t"
 	end
 
 	it "supports INSERT and REPLACE modes" do
-		@editor.bind(SPECIAL) do
-			@editor.move_left if @editor.get_character(@input) == LEFT_ARROW
-		end
-		@input << "test 0" << SPECIAL.chr << LEFT_ARROW.chr << "#1"
+		@input << "test 0" 
+		@editor.terminal.keys[:left_arrow].each { |k| @input << k.chr }
+		@input << "#1"
 		@input.rewind
 		@editor.read
 		@editor.line.text.should == "test #10"
 		@editor.toggle_mode
-		@input << "test 0" << SPECIAL.chr << LEFT_ARROW.chr << "#1"
+		@input << "test 0" 
+		@editor.terminal.keys[:left_arrow].each { |k| @input << k.chr }
+		@input << "#1"
 		@input.pos = 10
 		@editor.read
 		@editor.line.text.should == "test #1"
 	end
-
-
-
 	
 
 end

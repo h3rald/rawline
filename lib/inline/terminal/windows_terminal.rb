@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/local/bin/ruby -w
 
 module InLine
 	
@@ -15,7 +15,8 @@ module InLine
 					:down_arrow => [0xE0,0x50],
 					:insert => [0xE0,0x52],
 					:delete => [0xE0,0x53],
-					:backspace => [8]
+					:backspace => [8],
+					:enter => [?\r]
 				})
 		end
 

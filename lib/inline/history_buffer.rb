@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/local/bin/ruby -w
 
 module InLine
 
@@ -7,8 +7,7 @@ module InLine
 		attr_reader :position, :size
 		attr_accessor :duplicates, :exclude, :cycle
 
-		alias clear_array clear
-		alias add <<
+		undef <<
 
 		def initialize(size)
 			@duplicates = true
@@ -27,9 +26,9 @@ module InLine
 			@position = nil 
 		end
 		
-		def clear
+		def empty
 			@position = nil 
-			clear_array
+			clear
 		end
 
 		def get

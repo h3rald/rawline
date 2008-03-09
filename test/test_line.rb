@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/local/bin/ruby -w
 
 module InLine
 	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
@@ -30,15 +30,15 @@ describe InLine::Line do
 		@line.text.should == "This is a test"
 	end
 
-	it "updates @position via '<' and '>'" do
+	it "updates @position via 'left' and 'right'" do
 		@line.text = "test #3"
-		@line > 2
+		@line.right 2
 		@line.position.should == 2
-		@line < 1
+		@line.left
 		@line.position.should == 1
-		@line < 4
+		@line.left 4
 		@line.position.should == 0
-		@line > HighLine::SystemExtensions.terminal_size()[0]+10
+		@line.right HighLine::SystemExtensions.terminal_size()[0]+10
 		@line.position.should == HighLine::SystemExtensions.terminal_size()[0]-2
 		@line.eol.should == 6
 	end
@@ -46,14 +46,14 @@ describe InLine::Line do
 	it "is aware of the word in which the cursor is" do
 		@line.text = "This is another test"
 		@line.word.should == {:start => 0, :end => 3, :text => "This"}
-		@line > 2
+		@line.right 2
 		@line[2].should == 'i'[0]
 		@line.word.should == {:start => 0, :end => 3, :text => "This"}
-		@line > 1
+		@line.right
 		@line.word.should == {:start => 0, :end => 3, :text => "This"}
-		@line > 1
+		@line.right
 		@line.word.should == {:start => 0, :end => 3, :text => "This"}
-		@line > 1
+		@line.right
 		@line.word.should == {:start => 5, :end => 6, :text => "is"}
 	end
 

@@ -35,7 +35,7 @@ module InLine
 
 		include HighLine::SystemExtensions
 
-		attr_accessor :char, :history_size, :line_history_size, :terminal, :keys, :word_separator, :mode, :completion_proc, :line, :history, :completion_append_character
+		attr_accessor :char, :history_size, :line_history_size, :terminal, :keys, :word_separator, :mode, :completion_proc, :line, :history, :completion_append_string
 
 		# 
 		# Create an instance of InLine::Editor which can be used 

@@ -132,7 +132,7 @@ describe InLine::Editor do
 	end
 
 	it "can complete words" do
-		@editor.completion_append_character = "\t"
+		@editor.completion_append_string = "\t"
 		@editor.bind(:tab) { @editor.complete }
 		@editor.completion_proc = lambda do |word|
 	  	if word

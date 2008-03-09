@@ -3,7 +3,7 @@
 #
 #	editor.rb
 #
-# Created by Fabio Cevasco on 2008-03-03.
+# Created by Fabio Cevasco on 2008-03-01.
 # Copyright (c) 2008 Fabio Cevasco. All rights reserved.
 #
 # This is Free Software.  See LICENSE for details.
@@ -21,7 +21,7 @@ module InLine
 	# 
 	# Note that the following default key bindings are provided:
 	#
-	# * TAB: word completion defined via completion_proc()
+	# * TAB: word completion defined via completion_proc
 	# * LEFT/RIGHT ARROWS: cursor movement (left/right)
 	# * UP/DOWN ARROWS: history navigation
 	# * DEL: Delete character under cursor
@@ -40,16 +40,18 @@ module InLine
 		# 
 		# Create an instance of InLine::Editor which can be used 
 		# to read from input and perform line-editing operations.
-		# It takes an optional block used to override the following instance attributes:
-		# * <tt>@history_size</tt>
-		# * <tt>@line_history_size</tt>
-		# * <tt>@keys</tt>
-		# * <tt>@word_separator</tt>
-		# * <tt>@mode</tt>
-		# * <tt>@completion_proc</tt>
-		# * <tt>@completion_append_character</tt>
-		# * <tt>@completion_matches</tt>
-		# * <tt>@terminal</tt>
+		# This method takes an optional block used to override the 
+		# following instance attributes:
+		# * <tt>@history_size</tt> - the size of the editor history buffer (30).
+		# * <tt>@line_history_size</tt> - the size of the editor line history 
+		# buffer (50).
+		# * <tt>@keys</tt> - the keys (arrays of character codes) 
+		# bound to specific actions.
+		# * <tt>@word_separator</tt> - a string used as word separator (' ').
+		# * <tt>@mode</tt> - The editor's character insertion mode (:insert).
+		# * <tt>@completion_proc</tt> - a Proc object used to perform word completion.
+		# * <tt>@completion_append_string</tt> - a string to append to completed words.
+		# * <tt>@terminal</tt> -  an InLine::Terminal containing character key codes.
 		#
 		def initialize(input=STDIN, output=STDOUT)
 			@input = input
@@ -66,7 +68,7 @@ module InLine
 			@word_separator = ' '
 			@mode = :insert
 			@completion_proc = []
-			@completion_append_character = " "
+			@completion_append_string = ' '
 			@completion_matches = HistoryBuffer.new(0) { |h| h.duplicates = false; h.cycle = true }
 			set_default_keys
 			yield self if block_given?
@@ -98,12 +100,12 @@ module InLine
 				break if @char == @terminal.keys[:enter] || !@char
 			end
 			puts
-			@line.text
+			"#{@line.text}\n"
 		end
 
 		# 
 		# Read and parse a character from <tt>@input</tt>.
-		# This method is called automatically by <tt>read()</tt>
+		# This method is called automatically by <tt>read</tt>
 		#
 		def read_character
 			c = get_character(@input)
@@ -112,7 +114,7 @@ module InLine
 
 		#
 		#	Parse a key or key sequence into the corresponding codes.
-		# This method is called automatically by <tt>read_character()</tt>
+		# This method is called automatically by <tt>read_character</tt>
 		#
 		def parse_key_code(code)
 			if @terminal.escape_codes.include? code then
@@ -143,7 +145,7 @@ module InLine
 		#
 		# Process a character. If the key corresponding to the inputted character
 		# is bound to an action, call <tt>press_key</tt>, otherwise call <tt>default_action</tt>.
-		# This method is called automatically by <tt>read()</tt>
+		# This method is called automatically by <tt>read</tt>
 		#
 		def process_character
 			case @char.class.to_s
@@ -212,24 +214,24 @@ module InLine
 		end
 
 		# 
-		# Return true if the last character read via <tt>read()</tt> is bound to an action.
+		# Return true if the last character read via <tt>read</tt> is bound to an action.
 		#
 		def key_bound?
 			@keys[@char] ? true : false
 		end
 
 		# 
-		# Call the action bound to the last character read via <tt>read()</tt>.
-		# This method is called automatically by <tt>process_character()</tt>.
+		# Call the action bound to the last character read via <tt>read</tt>.
+		# This method is called automatically by <tt>process_character</tt>.
 		#
 		def press_key
 			@keys[@char].call
 		end
 
 		# 
-		# Execute the default action for the last character read via <tt>read()</tt>. 
-		# By default it prints the character to the screen via <tt>print_character()</tt>.
-		# This method is called automatically by <tt>process_character()</tt>.
+		# Execute the default action for the last character read via <tt>read</tt>. 
+		# By default it prints the character to the screen via <tt>print_character</tt>.
+		# This method is called automatically by <tt>process_character</tt>.
 		#
 		def default_action
 			print_character
@@ -268,9 +270,9 @@ module InLine
 		# completed word via <tt>@completion_append_character</tt> and word
 		# separators can be defined via <tt>@word_separator</tt>.
 		#
-		# This action is bound to TAB by default, so the first
-		# match is displayed the first time the user presses TAB, and all
-		# the possible messages will be displayed (cyclically) when TAB is
+		# This action is bound to the tab key by default, so the first
+		# match is displayed the first time the user presses tab, and all
+		# the possible messages will be displayed (cyclically) when tab is
 		# pressed again. 
 		# 
 		def complete
@@ -283,10 +285,10 @@ module InLine
 			complete_word = lambda do |match|
 				unless @line.word[:text].length == 0
 					# If not in a word, print the match, otherwise continue existing word
-					move_to_position(@line.word[:end]+@completion_append_character.length+1)
+					move_to_position(@line.word[:end]+@completion_append_string.length+1)
 				end
 				(@line.position-word_start).times { delete_left_character(true) }
-				write match+@completion_append_character
+				write match+@completion_append_string
 			end
 			unless matches.empty? then
 				@completion_matches.resize(matches.length) 
@@ -309,7 +311,7 @@ module InLine
 
 		# 
 		# Adds <tt>@line.text</tt> to the editor history. This action is 
-		# bound to the ENTER key by default.
+		# bound to the enter key by default.
 		#
 		def newline
 			add_to_history
@@ -317,8 +319,8 @@ module InLine
 
 		# 
 		# Move the cursor left (if possible) by printing a 
-		# BACKSPACE, updating <tt>@line.position</tt> accordingly.
-		# This action is bound to LEFT_ARROW by default. 
+		# backspace, updating <tt>@line.position</tt> accordingly.
+		# This action is bound to the left arrow key by default. 
 		#
 		def move_left
 			unless @line.bol?:
@@ -333,7 +335,7 @@ module InLine
 		# Move the cursor right (if possible) by re-printing the
 		# character at the right of the cursor, if any, and updating
 		# <tt>@line.position</tt> accordingly. 
-		# This action is bound to RIGHT_ARROW by default.
+		# This action is bound to the right arrow key by default.
 		#
 		def move_right
 			unless @line.position > @line.eol:
@@ -387,7 +389,7 @@ module InLine
 		# Delete the character at the left of the cursor. 
 		# If <tt>no_line_hisytory</tt> is set to true, the deletion won't be
 		# recorded in the line history.
-		# This action is bound to BACKSPACE by default.
+		# This action is bound to the backspace key by default.
 		#
 		def delete_left_character(no_line_history=false)
 			if move_left then
@@ -399,7 +401,7 @@ module InLine
 		# Delete the character under the cursor. 
 		# If <tt>no_line_hisytory</tt> is set to true, the deletion won't be
 		# recorded in the line history.
-		# This action is bound to DEL by default.
+		# This action is bound to the delete key by default.
 		#
 		def delete_character(no_line_history=false)
 			unless @line.position > @line.eol
@@ -418,7 +420,7 @@ module InLine
 		# 
 		# Clear the current line, i.e. 
 		# <tt>@line.text</tt> and <tt>@line.position</tt>.
-		# This action is bound to CTRL_K by default.
+		# This action is bound to ctrl+k by default.
 		#
 		def clear_line
 			@output.putc ?\r
@@ -432,7 +434,7 @@ module InLine
 
 		# 
 		# Undo the last modification to the current line (<tt>@line.text</tt>).
-		# This action is bound to CTRL_Z by default.
+		# This action is bound to ctrl+z by default.
 		#
 		def undo
 			generic_history_back(@line.history) if @line.history.position == nil
@@ -442,7 +444,7 @@ module InLine
 		# 
 		# Redo a previously-undone modification to the 
 		# current line (<tt>@line.text</tt>).
-		# This action is bound to CTRL_Y by default.
+		# This action is bound to ctrl+y by default.
 		#
 		def redo
 			generic_history_forward(@line.history)
@@ -451,7 +453,7 @@ module InLine
 		# 
 		# Load the previous entry of the editor in place of the 
 		# current line (<tt>@line.text</tt>).
-		# This action is bound to UP_ARROW by default.
+		# This action is bound to the up arrow key by default.
 		#
 		def history_back
 			unless @history.position
@@ -471,7 +473,7 @@ module InLine
 		# 
 		# Load the next entry of the editor history in place of the 
 		# current line (<tt>@line.text</tt>).
-		# This action is bound to DOWN_ARROW by default.
+		# This action is bound to down arrow key by default.
 		#
 		def history_forward
 			generic_history_forward(@history)

@@ -22,5 +22,5 @@ editor.completion_proc = lambda do |word|
 end
 
 loop do
-	editor.read("=> ")
+	puts "You typed: [#{editor.read("=> ").chomp!}]"
 end

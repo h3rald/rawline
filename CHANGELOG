@@ -1,0 +1,3 @@
+== Version 0.1.0
+
+First preview release of InLine, implementing some of the functionality provided by the ReadLine library such as basic line editing, history and word completion. 

@@ -1,5 +1,14 @@
 #!/usr/local/bin/ruby -w
 
+#
+#	inline.rb
+#
+# Created by Fabio Cevasco on 2008-03-01.
+# Copyright (c) 2008 Fabio Cevasco. All rights reserved.
+#
+# This is Free Software.  See LICENSE for details.
+#
+
 module InLine
 	HOME = File.dirname(File.expand_path(__FILE__))
 	class BindingException < Exception; end

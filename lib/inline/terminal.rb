@@ -1,16 +1,33 @@
 #!/usr/local/bin/ruby -w
 
+#
+#	terminal.rb
+#
+# Created by Fabio Cevasco on 2008-03-01.
+# Copyright (c) 2008 Fabio Cevasco. All rights reserved.
+#
+# This is Free Software.  See LICENSE for details.
+#
+#
+#
 module InLine
 	
+	# 
+	# The Terminal class defines character codes and code sequences which can be
+	# bound to actions by editors.
+	# An OS-dependent subclass of InLine::Terminal is automatically instantiated by
+	# InLine::Editor.
+	#
 	class Terminal
 
 		include HighLine::SystemExtensions
 
-		
-
 		attr_accessor :escape_codes
 		attr_reader :keys, :escape_sequences
 
+		# 
+		# Create an instance of InLine::Terminal.
+		#
 		def initialize
 			@keys = 
 				{
@@ -105,6 +122,10 @@ module InLine
 			update
 		end
 
+		#
+		# Update the terminal escape sequences. This method is called automatically
+		# by InLine::Editor#bind().
+		#
 		def update
 			@keys.each_value do |k|
 				l = k.length

@@ -1,0 +1,43 @@
+= InLine
+
+InLine was created to provide a 100% Ruby alternative to the ReadLine library, providing some of its most popular features such as:
+
+* Basic line editing operations
+* Word completion
+* History Management 
+* Custom key/key sequences bindings
+
+== Installation
+
+The simplest method to install InLine is to install the gem:
+
+	gem install -r inline
+
+== Usage
+
+Editor initialization:
+
+	require 'inline'
+	editor = InLine::Editor.new
+
+Key binding:
+
+	editor.bind(:ctrl_z) { editor.undo }
+	editor.bind(:up_arrow) { editor.history_back }
+	editor.bind(:ctrl_x) { puts "Exiting..."; exit }
+
+Setup word completion
+
+	editor.completion_proc = lambda do |word|
+		if word
+			['select', 'update', 'delete', 'debug', 'destroy'].find_all	{ |e| e.match(/^#{Regexp.escape(word)}/) }
+		end
+	end
+	editor.completion_append_string = " "
+
+Read input:
+
+	editor.read("=> ")
+
+
+ 

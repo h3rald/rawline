@@ -1,7 +1,20 @@
 #!/usr/local/bin/ruby -w
 
+#
+#	vt220_terminal.rb
+#
+# Created by Fabio Cevasco on 2008-03-01.
+# Copyright (c) 2008 Fabio Cevasco. All rights reserved.
+#
+# This is Free Software.  See LICENSE for details.
+#
+
 module InLine
 	
+	# 
+	# This class is used to define all the most common character codes and
+	# escape sequences used on *nix systems.
+	#
 	class VT220Terminal < Terminal
 
 		def initialize

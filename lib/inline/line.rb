@@ -1,7 +1,21 @@
 #!/usr/local/bin/ruby -w
 
+#
+#	line.rb
+#
+# Created by Fabio Cevasco on 2008-03-01.
+# Copyright (c) 2008 Fabio Cevasco. All rights reserved.
+#
+# This is Free Software.  See LICENSE for details.
+#
+
 module InLine
 	
+	# 
+	# The Line class is used to represent the current line being processed and edited
+	# by InLine::Editor. It keeps track of the characters typed, the cursor position, 
+	# the current word and maintains an internal history to allow undos and redos.
+	#
 	class Line
 
 		attr_accessor :text, :position, :history, :prompt, :history_size, :word_separator
@@ -9,6 +23,15 @@ module InLine
 
 		include HighLine::SystemExtensions
 
+		# 
+		# Create an instance of InLine::Line.
+		# This method takes an optional block used to override the 
+		# following instance attributes:
+		# * <tt>@text</tt> - the line text.
+		# * <tt>@history_size</tt> - the size of the line history buffer.
+		# * <tt>@position</tt> - the current cursor position within the line.
+		# * <tt>@prompt</tt> - a prompt to prepend to the line text.
+		#
 		def initialize(history_size)
 			@text = ""
 			@history_size = history_size
@@ -22,10 +45,20 @@ module InLine
 			@offset = @prompt.length
 		end
 
+		# 
+		# Return the maximum line length. By default, it corresponds to the terminal's 
+		# width minus the length of the line prompt.
+		#
 		def max_length
 			terminal_size[0]-@offset
 		end
 
+		# 
+		# Return information about the current word, as a Hash composed by the following
+		# elements:
+		# * <tt>:start</tt>: The position in the line corresponding to the word start
+		# * <tt>:end</tt>: The position in the line corresponding to the word end
+		# * <tt>:text</tt>: The word text.
 		def word
 			last = @text.index(@word_separator, @position)
 			first = @text.rindex(@word_separator, @position)
@@ -51,42 +84,72 @@ module InLine
 			{:start => first, :end => last, :text => text}
 		end
 
+		# 
+		# Return the position corresponding to the beginning of the line.
+		#
 		def bol
 		 0	
 		end
 
+		# 
+		# Return true if the cursor is at the beginning of the line.
+		#
 		def bol?
 			@position<=bol
 		end
 		
+		# 
+		# Return the position corresponding to the end of the line.
+		#
 		def eol
 			@text.length-1
 		end
 
+		# 
+		# Return true if the cursor is at the end of the line.
+		#
 		def eol?
 			@position>=eol
 		end
 
+		# 
+		# Decrement the line position by <tt>offset</tt>
+		#
 		def left(offset=1)
 			@position = (@position-offset <= 0) ? 0 : @position-offset
 		end
 
+		# 
+		# Increment the line position by <tt>offset</tt>
+		#
 		def right(offset=1)
 			@position = (@position+offset >= max_length) ? max_length : @position+offset
 		end
 
+		# 
+		# Add a character (expressed as a character code) to the line text.
+		#
 		def <<(char)
 			@text << char.chr
 		end
 
+		#
+		# Access the line text at <tt>@index</tt>
+		#
 		def [](index)
 			@text[index]
 		end
 
+		#
+		#  Modify the character(s) in the line text at <tt>@index</tt>
+		#
 		def []=(index, chars)
 			@text[index] = chars
 		end
 
+		#
+		# Return the length of the line text.
+		#
 		def length
 			@text.length
 		end

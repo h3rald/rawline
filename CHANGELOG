@@ -1,3 +1,10 @@
+== Version 0.1.1
+
+* Added /examples and /test directory to gem.
+* Escape codes can now be used in prompt.
+* It is now possible to use bind(key, &block) with a String as key, even if the corresponding escape sequence is not defined.
+* Added Editor#write_line(string) to print a any string (and "hit return").
+
 == Version 0.1.0
 
 First preview release of InLine, implementing some of the functionality provided by the ReadLine library such as basic line editing, history and word completion. 

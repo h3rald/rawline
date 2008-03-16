@@ -41,6 +41,7 @@ describe InLine::Editor do
 		lambda {@editor.bind({:test => [?\e, ?t, ?e, ?s, ?t]}) { "test #2e" }}.should raise_error(InLine::BindingException)
 		@editor.terminal.escape_codes << ?\e
 		lambda {@editor.bind({:test => "\etest"}) { "test #2e" }}.should_not raise_error(InLine::BindingException)
+		lambda {@editor.bind("\etest2") { "test #2f" }}.should_not raise_error(InLine::BindingException)
 		@input << ?\C-w.chr
 		@input.rewind
 	 	@editor.read
@@ -53,6 +54,8 @@ describe InLine::Editor do
 		@editor.press_key.should == "test #2d"
 		@editor.char = [?\e, ?t, ?e, ?s, ?t]
 		@editor.press_key.should == "test #2e"
+		@editor.char = [?\e, ?t, ?e, ?s, ?t, ?2]
+		@editor.press_key.should == "test #2f"
 	end
 
 	it "keeps track of the cursor position" do

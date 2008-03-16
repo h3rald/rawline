@@ -141,6 +141,19 @@ module InLine
 			string.each_byte { |c| print_character c, true }
 			add_to_line_history
 		end
+		
+		#
+		#	Write a new line to <tt>@output</tt>, overwriting any existing text
+		#	and printing a end of line character.
+		#
+		def write_line(string)
+			clear_line
+			@output.print string
+			@line.text = string
+			add_to_line_history
+			add_to_history
+			@char = nil
+		end
 
 		#
 		# Process a character. If the key corresponding to the inputted character
@@ -163,10 +176,10 @@ module InLine
 		# * A Symbol identifying a character or character sequence defined for the current terminal
 		# * A Fixnum identifying a character defined for the current terminal
 		# * An Array identifying a character or character sequence defined for the current terminal
-		# * A String identifying a character or character sequence defined for the current terminal
+		# * A String identifying a character or character sequence, even if it is not defined for the current terminal
 		# * An Hash identifying a character or character sequence, even if it is not defined for the current terminal
 		#
-		# If <tt>key</tt> is a has, then:
+		# If <tt>key</tt> is a hash, then:
 		#
 		# * It must contain only one key/value pair
 		# * The key identifies the name of the character or character sequence
@@ -185,28 +198,10 @@ module InLine
 				raise BindingException, "Unknown key or key sequence '#{key.to_s}' (#{key.class.to_s})" unless @terminal.keys.has_value? [key]
 				@keys[[key]] = block
 			when 'String' then
-				raise BindingException, "Unknown key or key sequence '#{key.to_s}' (#{key.class.to_s})" unless @terminal.keys.has_value? key_array
-				key_array = []
-				key.each_byte { |b| key_array << b }
-				@keys[key_array] = block
+				bind_hash({:"#{key}" => key}, block)
 			when 'Hash' then
 				raise BindingException, "Cannot bind more than one key or key sequence at once" unless key.values.length == 1
-				key.each_pair do |j,k|
-					raise BindingException, "'#{k[0].chr}' is not a legal escape code for '#{@terminal.class.to_s}'." unless k.length > 1 && @terminal.escape_codes.include?(k[0])
-					code = []
-					case k.class.to_s
-					when 'Fixnum' then
-						code = [k]
-					when 'String' then
-						k.each_byte { |b| code << b }
-					when 'Array' then
-						code = k
-					else
-						raise BindingException, "Unable to bind '#{k.to_s}' (#{k.class.to_s})"
-					end
-					@terminal.keys[j] = code
-					@keys[code] = block
-				end
+				bind_hash(key, block)
 			else
 				raise BindingException, "Unable to bind '#{key.to_s}' (#{key.class.to_s})"
 			end
@@ -424,7 +419,7 @@ module InLine
 		#
 		def clear_line
 			@output.putc ?\r
-			raw_print @line.prompt
+			print @line.prompt
 			@line.length.times { putc ?\s }
 			@line.length.times { putc ?\b }
 			add_to_line_history
@@ -515,7 +510,7 @@ module InLine
 			pos = position || new_line.length
 			text = @line.text
 			putc ?\r
-			raw_print @line.prompt
+			print @line.prompt
 			raw_print new_line
 			n = text.length-new_line.length+1
 			if n > 0
@@ -543,6 +538,25 @@ module InLine
 
 		private
 
+		def bind_hash(key, block)
+			key.each_pair do |j,k|
+				raise BindingException, "'#{k[0].chr}' is not a legal escape code for '#{@terminal.class.to_s}'." unless k.length > 1 && @terminal.escape_codes.include?(k[0])
+				code = []
+				case k.class.to_s
+				when 'Fixnum' then
+					code = [k]
+				when 'String' then
+					k.each_byte { |b| code << b }
+				when 'Array' then
+					code = k
+				else
+					raise BindingException, "Unable to bind '#{k.to_s}' (#{k.class.to_s})"
+				end
+				@terminal.keys[j] = code
+				@keys[code] = block
+			end
+		end
+		
 		def select_characters_from_cursor(offset=0)
 			select_characters(:right, @line.length-@line.position, offset)
 		end

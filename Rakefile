@@ -22,7 +22,7 @@ end
 
 spec = Gem::Specification.new do |s|
   s.name = %q{inline}
-  s.version = "0.1.0"
+  s.version = "0.1.1"
   s.date = %q{2008-3-15}
   s.summary = %q{A library for definign custom key bindings and perform line editing operations}
   s.email = %q{h3rald@h3rald.com}
@@ -31,7 +31,7 @@ spec = Gem::Specification.new do |s|
   s.description = %q{InLine can be used to define custom key bindings, perform common line editing operations, manage command history and define custom command completion rules. }
   s.has_rdoc = true
   s.authors = ["Fabio Cevasco"]
-  s.files = FileList["{lib}/**/*"].to_a+["README", "LICENSE", "CHANGELOG"]
+  s.files = FileList["{lib}/**/*"].to_a+FileList["{examples}/*"].to_a+FileList["{test}/*"].to_a+["README", "LICENSE", "CHANGELOG"]
   s.rdoc_options = ["--main", "README", "--exclude", "test"]
   s.extra_rdoc_files = ["README", "LICENSE", "CHANGELOG"]
 	s.test_file  = 'test/test_all.rb'  

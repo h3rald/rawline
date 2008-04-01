@@ -9,11 +9,11 @@
 # This is Free Software.  See LICENSE for details.
 #
 
-module InLine
+module RawLine
 	
 	# 
 	# The Line class is used to represent the current line being processed and edited
-	# by InLine::Editor. It keeps track of the characters typed, the cursor position, 
+	# by RawLine::Editor. It keeps track of the characters typed, the cursor position, 
 	# the current word and maintains an internal history to allow undos and redos.
 	#
 	class Line
@@ -24,7 +24,7 @@ module InLine
 		include HighLine::SystemExtensions
 
 		# 
-		# Create an instance of InLine::Line.
+		# Create an instance of RawLine::Line.
 		# This method takes an optional block used to override the 
 		# following instance attributes:
 		# * <tt>@text</tt> - the line text.
@@ -40,7 +40,7 @@ module InLine
 			@word_separator = ' '
 			yield self if block_given?
 			@words = []
-			@history = InLine::HistoryBuffer.new(@history_size)
+			@history = RawLine::HistoryBuffer.new(@history_size)
 			@history << "" # Add empty line for complete undo...
 			@offset = @prompt.length
 		end

@@ -1,6 +1,6 @@
 #!/usr/local/bin/ruby -w
 
-module InLine
+module RawLine
 	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
 end
 

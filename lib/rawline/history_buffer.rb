@@ -10,7 +10,7 @@
 #
 #
 #
-module InLine
+module RawLine
 
 	# 
 	# The HistoryBuffer class is used to hold the editor and line histories, as well
@@ -24,7 +24,7 @@ module InLine
 		undef <<
 
 		#
-		# Create an instance of InLine::HistoryBuffer. 
+		# Create an instance of RawLine::HistoryBuffer. 
 		# This method takes an optional block used to override the 
 		# following instance attributes:
 		# * <tt>@duplicates</tt> - whether or not duplicate items will be stored in the

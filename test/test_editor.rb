@@ -1,6 +1,6 @@
 #!/usr/local/bin/ruby -w
 
-module InLine
+module RawLine
 	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
 end
 
@@ -14,14 +14,14 @@ module HighLine::SystemExtensions
 end
 
 require 'stringio'
-require "#{InLine::TEST_HOME}/lib/inline"
+require "#{RawLine::TEST_HOME}/lib/RawLine"
 
-describe InLine::Editor do
+describe RawLine::Editor do
 
 	before :each do
 		@output = StringIO.new
 		@input = StringIO.new
-		@editor = InLine::Editor.new(@input, @output)
+		@editor = RawLine::Editor.new(@input, @output)
 	end
 
 	it "reads raw characters from @input" do
@@ -38,10 +38,10 @@ describe InLine::Editor do
 		@editor.bind(21) { "test #2c" }
 		@editor.bind([22]) { "test #2d" }
 		@editor.terminal.escape_codes = [] # remove any existing escape codes
-		lambda {@editor.bind({:test => [?\e, ?t, ?e, ?s, ?t]}) { "test #2e" }}.should raise_error(InLine::BindingException)
+		lambda {@editor.bind({:test => [?\e, ?t, ?e, ?s, ?t]}) { "test #2e" }}.should raise_error(RawLine::BindingException)
 		@editor.terminal.escape_codes << ?\e
-		lambda {@editor.bind({:test => "\etest"}) { "test #2e" }}.should_not raise_error(InLine::BindingException)
-		lambda {@editor.bind("\etest2") { "test #2f" }}.should_not raise_error(InLine::BindingException)
+		lambda {@editor.bind({:test => "\etest"}) { "test #2e" }}.should_not raise_error(RawLine::BindingException)
+		lambda {@editor.bind("\etest2") { "test #2f" }}.should_not raise_error(RawLine::BindingException)
 		@input << ?\C-w.chr
 		@input.rewind
 	 	@editor.read

@@ -9,7 +9,7 @@
 # This is Free Software.  See LICENSE for details.
 #
 
-module InLine
+module RawLine
 	
 	# 
 	# This class is used to define all the most common character codes and
@@ -19,7 +19,7 @@ module InLine
 
 		def initialize
 			super
-			@escape_codes = [0, 224]
+			@escape_codes = [0, 27, 224]
 			@keys.merge!(
 				{
 					:left_arrow => [224, 75],

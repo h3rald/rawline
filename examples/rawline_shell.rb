@@ -1,14 +1,14 @@
 #!/usr/local/bin/ruby -w
 
-require File.dirname(File.expand_path(__FILE__))+'/../lib/inline'
+require File.dirname(File.expand_path(__FILE__))+'/../lib/rawline'
 
-puts "*** Inline Editor Test Shell ***"
+puts "*** Rawline Editor Test Shell ***"
 puts " * Press CTRL+X to exit"
 puts " * Press CTRL+C to clear command history"
 puts " * Press CTRL+D for line-related information"
 puts " * Press CTRL+E to view command history"
 
-editor = InLine::Editor.new
+editor = RawLine::Editor.new
 
 editor.bind(:ctrl_c) { editor.clear_history }
 editor.bind(:ctrl_d) { editor.debug_line }

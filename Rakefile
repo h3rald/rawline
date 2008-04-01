@@ -21,14 +21,14 @@ Rake::RDocTask.new do |rdoc|
 end
 
 spec = Gem::Specification.new do |s|
-  s.name = %q{inline}
-  s.version = "0.1.1"
-  s.date = %q{2008-3-15}
+  s.name = %q{rawline}
+  s.version = "0.2.0"
+  s.date = %q{2008-04-01}
   s.summary = %q{A library for definign custom key bindings and perform line editing operations}
   s.email = %q{h3rald@h3rald.com}
-  s.homepage = %q{http://rubyforge.org/projects/inline}
+  s.homepage = %q{http://rubyforge.org/projects/rawline}
   s.rubyforge_project = %q{inline}
-  s.description = %q{InLine can be used to define custom key bindings, perform common line editing operations, manage command history and define custom command completion rules. }
+  s.description = %q{RawLine can be used to define custom key bindings, perform common line editing operations, manage command history and define custom command completion rules. }
   s.has_rdoc = true
   s.authors = ["Fabio Cevasco"]
   s.files = FileList["{lib}/**/*"].to_a+FileList["{examples}/*"].to_a+FileList["{test}/*"].to_a+["README", "LICENSE", "CHANGELOG"]

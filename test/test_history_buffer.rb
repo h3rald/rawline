@@ -1,15 +1,15 @@
 #!/usr/local/bin/ruby -w
 
-module InLine
+module RawLine
 	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
 end
 
-require "#{InLine::TEST_HOME}/lib/inline/history_buffer"
+require "#{RawLine::TEST_HOME}/lib/RawLine/history_buffer"
 
-describe InLine::HistoryBuffer do
+describe RawLine::HistoryBuffer do
 
 	before :each do
-		@history = InLine::HistoryBuffer.new(5)
+		@history = RawLine::HistoryBuffer.new(5)
 	end
 
 	it "instantiates an empty array when created" do

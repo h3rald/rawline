@@ -10,13 +10,13 @@
 #
 #
 #
-module InLine
+module RawLine
 	
 	# 
 	# The Terminal class defines character codes and code sequences which can be
 	# bound to actions by editors.
-	# An OS-dependent subclass of InLine::Terminal is automatically instantiated by
-	# InLine::Editor.
+	# An OS-dependent subclass of RawLine::Terminal is automatically instantiated by
+	# RawLine::Editor.
 	#
 	class Terminal
 
@@ -26,7 +26,7 @@ module InLine
 		attr_reader :keys, :escape_sequences
 
 		# 
-		# Create an instance of InLine::Terminal.
+		# Create an instance of RawLine::Terminal.
 		#
 		def initialize
 			@keys = 
@@ -70,7 +70,7 @@ module InLine
 
 		#
 		# Update the terminal escape sequences. This method is called automatically
-		# by InLine::Editor#bind().
+		# by RawLine::Editor#bind().
 		#
 		def update
 			@keys.each_value do |k|

@@ -1,9 +1,12 @@
-== Version 0.1.1
+== Version 0.2.0
 
 * Added /examples and /test directory to gem.
 * Escape codes can now be used in prompt.
 * It is now possible to use bind(key, &block) with a String as key, even if the corresponding escape sequence is not defined.
 * Added Editor#write_line(string) to print a any string (and "hit return").
+* Library name changed to "RawLine" to avoid name collision issues (Bug 18879: http://rubyforge.org/tracker/?func=detail&aid=18879&group_id=5622&atid=21788).
+* Provided alternative implementation for left and right arrows if terminal
+supports escape sequences (on Windows, it requires the Win32Console gem).
 
 == Version 0.1.0
 

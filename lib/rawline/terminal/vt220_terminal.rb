@@ -9,7 +9,7 @@
 # This is Free Software.  See LICENSE for details.
 #
 
-module InLine
+module RawLine
 	
 	# 
 	# This class is used to define all the most common character codes and

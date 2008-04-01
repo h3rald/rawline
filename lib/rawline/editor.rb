@@ -9,7 +9,7 @@
 # This is Free Software.  See LICENSE for details.
 #
 
-module InLine
+module RawLine
 
 	# 
 	# The Editor class defines methods to:
@@ -38,7 +38,7 @@ module InLine
 		attr_accessor :char, :history_size, :line_history_size, :terminal, :keys, :word_separator, :mode, :completion_proc, :line, :history, :completion_append_string
 
 		# 
-		# Create an instance of InLine::Editor which can be used 
+		# Create an instance of RawLine::Editor which can be used 
 		# to read from input and perform line-editing operations.
 		# This method takes an optional block used to override the 
 		# following instance attributes:
@@ -51,9 +51,10 @@ module InLine
 		# * <tt>@mode</tt> - The editor's character insertion mode (:insert).
 		# * <tt>@completion_proc</tt> - a Proc object used to perform word completion.
 		# * <tt>@completion_append_string</tt> - a string to append to completed words.
-		# * <tt>@terminal</tt> -  an InLine::Terminal containing character key codes.
+		# * <tt>@terminal</tt> -  an RawLine::Terminal containing character key codes.
 		#
 		def initialize(input=STDIN, output=STDOUT)
+			@win32_io = Win32::Console::ANSI::IO.new if WIN32CONSOLE
 			@input = input
 			@output = output
 			case PLATFORM
@@ -93,7 +94,7 @@ module InLine
 			end
 			add_to_line_history
 			loop do
-				print prompt if @newline
+				@output.print prompt if @newline
 				@newline = false
 				read_character
 				process_character
@@ -603,6 +604,44 @@ module InLine
 		end
 
 	end
+
+	if ANSI then
+
+		class Editor
+			
+			if WIN32CONSOLE then
+				def escape(string)
+					string.each_byte { |c| @win32_io.putc c }
+				end
+			else
+				def escape(string)
+					@output.print string
+				end
+			end
+
+			undef move_left
+			def move_left
+				unless @line.bol?:
+					@line.left
+					escape "\e[D"
+					return true
+				end
+				false
+			end
+			
+			undef move_right
+			def move_right
+				unless @line.position > @line.eol:
+					@line.right
+					escape "\e[C"
+					return true
+				end
+				false
+			end
+
+		end
+	end
+
 end
 
 

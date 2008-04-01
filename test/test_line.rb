@@ -1,18 +1,18 @@
 #!/usr/local/bin/ruby -w
 
-module InLine
+module RawLine
 	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
 end
 
 require 'highline'
 
-require "#{InLine::TEST_HOME}/lib/inline/history_buffer"
-require "#{InLine::TEST_HOME}/lib/inline/line"
+require "#{RawLine::TEST_HOME}/lib/RawLine/history_buffer"
+require "#{RawLine::TEST_HOME}/lib/RawLine/line"
 
-describe InLine::Line do
+describe RawLine::Line do
 
 	before :each do
-		@line = InLine::Line.new(5) {|l| l.prompt = "=>" }
+		@line = RawLine::Line.new(5) {|l| l.prompt = "=>" }
 	end
 
 	it "allows characters to be added to @text via the '<<' operator" do

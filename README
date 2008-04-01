@@ -1,6 +1,6 @@
-= InLine
+= RawLine
 
-InLine was created to provide a 100% Ruby alternative to the ReadLine library, providing some of its most popular features such as:
+RawLine was created to provide a 100% Ruby alternative to the ReadLine library, providing some of its most popular features such as:
 
 * Basic line editing operations
 * Word completion
@@ -9,16 +9,16 @@ InLine was created to provide a 100% Ruby alternative to the ReadLine library, p
 
 == Installation
 
-The simplest method to install InLine is to install the gem:
+The simplest method to install RawLine is to install the gem:
 
-	gem install -r inline
+	gem install -r rawline
 
 == Usage
 
 Editor initialization:
 
-	require 'inline'
-	editor = InLine::Editor.new
+	require 'rawline'
+	editor = RawLine::Editor.new
 
 Key binding:
 

@@ -4,7 +4,7 @@ module RawLine
 	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
 end
 
-require "#{RawLine::TEST_HOME}/lib/RawLine/history_buffer"
+require "#{RawLine::TEST_HOME}/lib/rawline/history_buffer"
 
 describe RawLine::HistoryBuffer do
 

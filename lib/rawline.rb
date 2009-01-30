@@ -22,11 +22,11 @@ end
 
 require "rubygems"
 require "highline"
-require "#{RawLine::HOME}/RawLine/terminal"
-require "#{RawLine::HOME}/RawLine/terminal/windows_terminal"
-require "#{RawLine::HOME}/RawLine/terminal/vt220_terminal"
-require "#{RawLine::HOME}/RawLine/history_buffer"
-require "#{RawLine::HOME}/RawLine/line"
-require "#{RawLine::HOME}/RawLine/editor"
+require "#{RawLine::HOME}/rawline/terminal"
+require "#{RawLine::HOME}/rawline/terminal/windows_terminal"
+require "#{RawLine::HOME}/rawline/terminal/vt220_terminal"
+require "#{RawLine::HOME}/rawline/history_buffer"
+require "#{RawLine::HOME}/rawline/line"
+require "#{RawLine::HOME}/rawline/editor"
 
 

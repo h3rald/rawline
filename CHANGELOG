@@ -1,3 +1,9 @@
+== Version 0.2.1
+
+* Minor bugfixing (linux only)
+* test file renaming
+* Moved to GitHub
+
 == Version 0.2.0
 
 * Added /examples and /test directory to gem.

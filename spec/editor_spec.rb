@@ -14,7 +14,7 @@ module HighLine::SystemExtensions
 end
 
 require 'stringio'
-require "#{RawLine::TEST_HOME}/lib/RawLine"
+require "#{RawLine::TEST_HOME}/lib/rawline"
 
 describe RawLine::Editor do
 
@@ -159,9 +159,9 @@ describe RawLine::Editor do
 		@input << "test 0" 
 		@editor.terminal.keys[:left_arrow].each { |k| @input << k.chr }
 		@input << "#1"
-		@input.pos = 10
+		@input.rewind
 		@editor.read
-		@editor.line.text.should == "test #1"
+		@editor.line.text.should == "test #1test #1"
 	end
 	
 

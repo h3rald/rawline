@@ -12,7 +12,7 @@ loop do
 	print "=> "
 	char = get_character
 	case char
-	when ?\C-x: print "Exiting..."; exit;
+	when ?\C-x: puts "Exiting..."; exit;
 	else puts "#{char.chr} [#{char}] (hex: #{char.to_s(16)})";
 	end
 	

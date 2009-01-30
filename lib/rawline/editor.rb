@@ -54,7 +54,7 @@ module RawLine
 		# * <tt>@terminal</tt> -  an RawLine::Terminal containing character key codes.
 		#
 		def initialize(input=STDIN, output=STDOUT)
-			@win32_io = Win32::Console::ANSI::IO.new if WIN32CONSOLE
+			@win32_io = Win32::Console::ANSI::IO.new if RawLine.const_defined? :WIN32CONSOLE
 			@input = input
 			@output = output
 			case PLATFORM
@@ -80,7 +80,7 @@ module RawLine
 			@char = nil
 			@newline = true
 		end
-		
+
 		# 
 		# Read characters from <tt>@input</tt> until the user presses ENTER 
 		# (use it in the same way as you'd use IO#gets)
@@ -142,7 +142,7 @@ module RawLine
 			string.each_byte { |c| print_character c, true }
 			add_to_line_history
 		end
-		
+
 		#
 		#	Write a new line to <tt>@output</tt>, overwriting any existing text
 		#	and printing a end of line character.
@@ -259,7 +259,7 @@ module RawLine
 				add_to_line_history unless no_line_history
 			end
 		end
-		
+
 		# 
 		# Complete the current word according to what returned by
 		# <tt>@completion_proc</tt>. Characters can be appended to the 
@@ -326,7 +326,7 @@ module RawLine
 			end
 			false
 		end
-		
+
 		# 
 		# Move the cursor right (if possible) by re-printing the
 		# character at the right of the cursor, if any, and updating
@@ -557,7 +557,7 @@ module RawLine
 				@keys[code] = block
 			end
 		end
-		
+
 		def select_characters_from_cursor(offset=0)
 			select_characters(:right, @line.length-@line.position, offset)
 		end
@@ -608,8 +608,8 @@ module RawLine
 	if ANSI then
 
 		class Editor
-			
-			if WIN32CONSOLE then
+
+			if RawLine.const_defined? :WIN32CONSOLE then
 				def escape(string)
 					string.each_byte { |c| @win32_io.putc c }
 				end
@@ -628,7 +628,7 @@ module RawLine
 				end
 				false
 			end
-			
+
 			undef move_right
 			def move_right
 				unless @line.position > @line.eol:

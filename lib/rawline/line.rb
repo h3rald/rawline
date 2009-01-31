@@ -39,7 +39,6 @@ module RawLine
 			@prompt = ""
 			@word_separator = ' '
 			yield self if block_given?
-			@words = []
 			@history = RawLine::HistoryBuffer.new(@history_size)
 			@history << "" # Add empty line for complete undo...
 			@offset = @prompt.length
@@ -82,6 +81,13 @@ module RawLine
 				text = @text[first..last]
 			end
 			{:start => first, :end => last, :text => text}
+		end
+
+		#
+		# Return an array containing the words present in the current line
+		#
+		def words
+			@text.split @word_separator
 		end
 
 		# 

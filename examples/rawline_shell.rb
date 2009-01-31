@@ -4,13 +4,13 @@ require File.dirname(File.expand_path(__FILE__))+'/../lib/rawline'
 
 puts "*** Rawline Editor Test Shell ***"
 puts " * Press CTRL+X to exit"
-puts " * Press CTRL+C to clear command history"
+puts " * Press CTRL+G to clear command history"
 puts " * Press CTRL+D for line-related information"
 puts " * Press CTRL+E to view command history"
 
 editor = RawLine::Editor.new
 
-editor.bind(:ctrl_c) { editor.clear_history }
+editor.bind(:ctrl_g) { editor.clear_history }
 editor.bind(:ctrl_d) { editor.debug_line }
 editor.bind(:ctrl_e) { editor.show_history }
 editor.bind(:ctrl_x) { puts; puts "Exiting..."; exit }

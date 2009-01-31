@@ -29,7 +29,7 @@ describe RawLine::Editor do
 		@input.rewind
 	 	@editor.read
 		@editor.line.text.should == "test #1"
-		@output.string.should == "test #1"
+		@output.string.should == "test #1\n"
 	end
 
 	it "can bind keys to code blocks" do

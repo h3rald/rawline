@@ -78,7 +78,6 @@ module RawLine
 				h.exclude = lambda { |item| item.strip == "" }
 			end
 			@char = nil
-			@newline = true
 		end
 
 		# 
@@ -87,20 +86,18 @@ module RawLine
 		# An optional prompt can be specified to be printed at the beginning of the line.
 		#
 		def read(prompt="")
-			@newline = true
+			@output.print prompt if prompt != ""
 			@line = Line.new(@line_history_size) do |l| 
 				l.prompt = prompt
 				l.word_separator = @word_separator
 			end
 			add_to_line_history
 			loop do
-				@output.print prompt if @newline
-				@newline = false
 				read_character
 				process_character
 				break if @char == @terminal.keys[:enter] || !@char
 			end
-			puts
+			@output.print "\n"
 			"#{@line.text}\n"
 		end
 
@@ -109,6 +106,7 @@ module RawLine
 		# This method is called automatically by <tt>read</tt>
 		#
 		def read_character
+			@output.flush
 			c = get_character(@input)
 			@char = parse_key_code(c) || c
 		end
@@ -145,7 +143,7 @@ module RawLine
 
 		#
 		#	Write a new line to <tt>@output</tt>, overwriting any existing text
-		#	and printing a end of line character.
+		#	and printing an end of line character.
 		#
 		def write_line(string)
 			clear_line
@@ -240,16 +238,15 @@ module RawLine
 		# won't be saved in the history of the current line.
 		#
 		def print_character(char=@char, no_line_history = false)
-			unless @line.length >= @line.max_length-2
-				case
-				when @line.position < @line.length then
+			unless @line.length >= @line.max_length-2 then
+				if @line.position < @line.length then
 					chars = select_characters_from_cursor if @mode == :insert
 					@output.putc char
 					@line.text[@line.position] = (@mode == :insert) ? "#{char.chr}#{@line.text[@line.position].chr}" : "#{char.chr}"
 					@line.right
 					if @mode == :insert then
 						raw_print chars
-						chars.length.times { putc ?\b } # move cursor back
+						chars.length.times { @output.putc ?\b } # move cursor back
 					end
 				else
 					@output.putc char
@@ -276,7 +273,7 @@ module RawLine
 			@completion_matches.empty
 			word_start = @line.word[:start]
 			sub_word = @line.text[@line.word[:start]..@line.position-1] || ""
-			matches  = @completion_proc.call(sub_word)
+			matches  = @completion_proc.call(sub_word) unless @completion_proc == []
 			matches = (matches.is_a?(Array)) ? matches.sort.reverse : []
 			complete_word = lambda do |match|
 				unless @line.word[:text].length == 0
@@ -405,8 +402,8 @@ module RawLine
 				chars = (@line.eol?) ? ' ' : select_characters_from_cursor(1)
 				# remove character from console and shift characters
 				raw_print chars
-				putc ?\s
-				(chars.length+1).times { putc ?\b }
+				@output.putc ?\s
+				(chars.length+1).times { @output.putc ?\b }
 				#remove character from line
 				@line[@line.position] = ''
 				add_to_line_history unless no_line_history
@@ -421,8 +418,8 @@ module RawLine
 		def clear_line
 			@output.putc ?\r
 			print @line.prompt
-			@line.length.times { putc ?\s }
-			@line.length.times { putc ?\b }
+			@line.length.times { @output.putc ?\s }
+			@line.length.times { @output.putc ?\b }
 			add_to_line_history
 			@line.text = ""
 			@line.position = 0
@@ -510,13 +507,13 @@ module RawLine
 		def overwrite_line(new_line, position=nil)
 			pos = position || new_line.length
 			text = @line.text
-			putc ?\r
+			@output.putc ?\r
 			print @line.prompt
 			raw_print new_line
 			n = text.length-new_line.length+1
 			if n > 0
-				n.times { putc ?\s } 
-				n.times { putc ?\b }
+				n.times { @output.putc ?\s } 
+				n.times { @output.putc ?\b }
 			end
 			@line.position = new_line.length
 			move_to_position(pos)		
@@ -589,12 +586,12 @@ module RawLine
 		end
 
 		def set_default_keys		
-			bind(:return) { newline }
+			bind(:enter) { newline }
 			bind(:tab) { complete }
 			bind(:backspace) { delete_left_character }
 			bind(:ctrl_k) { clear_line }
-			bind(:ctrl_z) { undo }
-			bind(:ctrl_y) { self.redo }
+			bind(:ctrl_u) { undo }
+			bind(:ctrl_r) { self.redo }
 			bind(:left_arrow) { move_left }
 			bind(:right_arrow) { move_right }
 			bind(:up_arrow) { history_back }

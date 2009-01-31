@@ -29,7 +29,7 @@ module RawLine
 					:insert => [?\e, ?[, ?2, ?~],
 					:delete => [?\e, ?[, ?3, ?~],
 					:backspace => [?\C-?],
-					:enter => [?\r],
+					:enter => (HighLine::SystemExtensions::CHARACTER_MODE == 'termios' ? [?\n] : [?\r]),
 
 					:ctrl_alt_a => [?\e, ?\C-a],
 					:ctrl_alt_b => [?\e, ?\C-b],

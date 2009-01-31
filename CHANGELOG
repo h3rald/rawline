@@ -1,6 +1,8 @@
 == Version 0.2.1
 
-* Minor bugfixing (linux only)
+* Fixed linux-specific bugs.
+* Added RawLine::Line#words method, which returns the words typed in the current line.
+* undo and redo action now bound to C-u and C-r instead of C-z and C-y to avoid conflicts on Linux.
 * test file renaming
 * Moved to GitHub
 

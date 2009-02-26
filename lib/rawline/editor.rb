@@ -57,7 +57,7 @@ module RawLine
 			@win32_io = Win32::Console::ANSI::IO.new if RawLine.const_defined? :WIN32CONSOLE
 			@input = input
 			@output = output
-			case PLATFORM
+			case RUBY_PLATFORM
 			when /win32/i then
 				@terminal = WindowsTerminal.new
 			else
@@ -197,7 +197,11 @@ module RawLine
 				raise BindingException, "Unknown key or key sequence '#{key.to_s}' (#{key.class.to_s})" unless @terminal.keys.has_value? [key]
 				@keys[[key]] = block
 			when 'String' then
-				bind_hash({:"#{key}" => key}, block)
+				if key.length == 1 then
+					@keys[[key.ord]] = block
+				else
+					bind_hash({:"#{key}" => key}, block)
+				end
 			when 'Hash' then
 				raise BindingException, "Cannot bind more than one key or key sequence at once" unless key.values.length == 1
 				bind_hash(key, block)
@@ -246,7 +250,7 @@ module RawLine
 					@line.right
 					if @mode == :insert then
 						raw_print chars
-						chars.length.times { @output.putc ?\b } # move cursor back
+						chars.length.times { @output.putc ?\b.ord } # move cursor back
 					end
 				else
 					@output.putc char
@@ -316,8 +320,8 @@ module RawLine
 		# This action is bound to the left arrow key by default. 
 		#
 		def move_left
-			unless @line.bol?:
-				@output.putc ?\b
+			unless @line.bol? then
+				@output.putc ?\b.ord
 				@line.left
 				return true
 			end
@@ -331,7 +335,7 @@ module RawLine
 		# This action is bound to the right arrow key by default.
 		#
 		def move_right
-			unless @line.position > @line.eol:
+			unless @line.position > @line.eol then
 				@line.right
 				@output.putc @line.text[@line.position-1]
 				return true
@@ -402,8 +406,8 @@ module RawLine
 				chars = (@line.eol?) ? ' ' : select_characters_from_cursor(1)
 				# remove character from console and shift characters
 				raw_print chars
-				@output.putc ?\s
-				(chars.length+1).times { @output.putc ?\b }
+				@output.putc ?\s.ord
+				(chars.length+1).times { @output.putc ?\b.ord }
 				#remove character from line
 				@line[@line.position] = ''
 				add_to_line_history unless no_line_history
@@ -418,8 +422,8 @@ module RawLine
 		def clear_line
 			@output.putc ?\r
 			print @line.prompt
-			@line.length.times { @output.putc ?\s }
-			@line.length.times { @output.putc ?\b }
+			@line.length.times { @output.putc ?\s.ord }
+			@line.length.times { @output.putc ?\b.ord }
 			add_to_line_history
 			@line.text = ""
 			@line.position = 0
@@ -453,7 +457,7 @@ module RawLine
 				current_line = @line.text.dup
 				# Temporarily override exclusion rules
 				exclude = @history.exclude.dup
-				@history.exclude = lambda { nil }
+				@history.exclude = lambda{|a|}
 				# Add current line
 				@history << current_line
 				@history.exclude = exclude
@@ -507,13 +511,13 @@ module RawLine
 		def overwrite_line(new_line, position=nil)
 			pos = position || new_line.length
 			text = @line.text
-			@output.putc ?\r
+			@output.putc ?\r.ord
 			print @line.prompt
 			raw_print new_line
 			n = text.length-new_line.length+1
 			if n > 0
-				n.times { @output.putc ?\s } 
-				n.times { @output.putc ?\b }
+				n.times { @output.putc ?\s.ord } 
+				n.times { @output.putc ?\b.ord }
 			end
 			@line.position = new_line.length
 			move_to_position(pos)		
@@ -538,7 +542,7 @@ module RawLine
 
 		def bind_hash(key, block)
 			key.each_pair do |j,k|
-				raise BindingException, "'#{k[0].chr}' is not a legal escape code for '#{@terminal.class.to_s}'." unless k.length > 1 && @terminal.escape_codes.include?(k[0])
+				raise BindingException, "'#{k[0].chr}' is not a legal escape code for '#{@terminal.class.to_s}'." unless k.length > 1 && @terminal.escape_codes.include?(k[0].ord)
 				code = []
 				case k.class.to_s
 				when 'Fixnum' then
@@ -618,7 +622,7 @@ module RawLine
 
 			undef move_left
 			def move_left
-				unless @line.bol?:
+				unless @line.bol? then
 					@line.left
 					escape "\e[D"
 					return true
@@ -628,7 +632,7 @@ module RawLine
 
 			undef move_right
 			def move_right
-				unless @line.position > @line.eol:
+				unless @line.position > @line.eol then
 					@line.right
 					escape "\e[C"
 					return true

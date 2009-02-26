@@ -9,7 +9,7 @@ require 'highline/system_extensions'
 module HighLine::SystemExtensions
   # Override Windows' character reading so it's not tied to STDIN.
   def get_character( input = STDIN )
-		input.getc
+		input.getbyte
   end
 end
 
@@ -38,23 +38,23 @@ describe RawLine::Editor do
 		@editor.bind(21) { "test #2c" }
 		@editor.bind([22]) { "test #2d" }
 		@editor.terminal.escape_codes = [] # remove any existing escape codes
-		lambda {@editor.bind({:test => [?\e, ?t, ?e, ?s, ?t]}) { "test #2e" }}.should raise_error(RawLine::BindingException)
-		@editor.terminal.escape_codes << ?\e
+		lambda {@editor.bind({:test => [?\e.ord, ?t.ord, ?e.ord, ?s.ord, ?t.ord]}) { "test #2e" }}.should raise_error(RawLine::BindingException)
+		@editor.terminal.escape_codes << ?\e.ord
 		lambda {@editor.bind({:test => "\etest"}) { "test #2e" }}.should_not raise_error(RawLine::BindingException)
 		lambda {@editor.bind("\etest2") { "test #2f" }}.should_not raise_error(RawLine::BindingException)
 		@input << ?\C-w.chr
 		@input.rewind
 	 	@editor.read
 		@editor.line.text.should == "test #2a"
-		@editor.char = [?\C-q]
+		@editor.char = [?\C-q.ord]
 		@editor.press_key.should == "test #2b"
-		@editor.char = [?\C-u]
+		@editor.char = [?\C-u.ord]
 		@editor.press_key.should == "test #2c"
-		@editor.char = [?\C-v]
+		@editor.char = [?\C-v.ord]
 		@editor.press_key.should == "test #2d"
-		@editor.char = [?\e, ?t, ?e, ?s, ?t]
+		@editor.char = [?\e.ord, ?t.ord, ?e.ord, ?s.ord, ?t.ord]
 		@editor.press_key.should == "test #2e"
-		@editor.char = [?\e, ?t, ?e, ?s, ?t, ?2]
+		@editor.char = [?\e.ord, ?t.ord, ?e.ord, ?s.ord, ?t.ord, ?2.ord]
 		@editor.press_key.should == "test #2f"
 	end
 

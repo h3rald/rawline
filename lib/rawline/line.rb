@@ -62,11 +62,15 @@ module RawLine
 			last = @text.index(@word_separator, @position)
 			first = @text.rindex(@word_separator, @position)
 			# Trim word separators and handle EOL and BOL
-			if first: first +=1 
-			else first = bol
+			if first then
+			 	first +=1 
+			else 
+				first = bol
 			end
-			if last: last -=1 
-			else last = eol+1 unless last
+			if last then
+			 	last -=1 
+			else 
+				last = eol+1 unless last
 			end
 			# Swap if overlapping
 			last, first = first, last if last < first

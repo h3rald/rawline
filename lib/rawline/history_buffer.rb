@@ -35,7 +35,7 @@ module RawLine
 		#
 		def initialize(size)
 			@duplicates = true
-			@exclude = lambda { nil }
+			@exclude = lambda{|a|}
 			@cycle = false
 			yield self if block_given?
 			@size = size
@@ -90,9 +90,12 @@ module RawLine
 		def back
 			return nil unless length > 0
 			case @position
-			when nil: @position = length-1
-			when 0: @position = length-1 if @cycle
-			else @position -= 1
+			when nil then
+				@position = length-1
+			when 0 then
+			 	@position = length-1 if @cycle
+			else 
+				@position -= 1
 			end
 		end
 
@@ -102,9 +105,12 @@ module RawLine
 		def forward
 			return nil unless length > 0
 			case @position
-			when nil: @position = length-1
-			when length-1: @position = 0 if @cycle
-			else @position += 1
+			when nil then
+				@position = length-1
+			when length-1 then
+			 	@position = 0 if @cycle
+			else 
+				@position += 1
 			end
 		end
 

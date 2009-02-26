@@ -13,7 +13,7 @@ describe RawLine::HistoryBuffer do
 	end
 
 	it "instantiates an empty array when created" do
- 		@history.length.should == 0
+		@history.length.should == 0
 	end
 
 	it "allows items to be added to the history" do
@@ -27,7 +27,7 @@ describe RawLine::HistoryBuffer do
 		@history << "line #3"
 		@history.should == ["line #1", "line #3", "line #2", "line #3"]
 		@history.exclude = lambda { |i| i.match(/line #[456]/) }
-	 	@history << "line #4"
+		@history << "line #4"
 		@history << "line #5"
 		@history << "line #6"
 		@history.should == ["line #1", "line #3", "line #2", "line #3"]	
@@ -107,7 +107,4 @@ describe RawLine::HistoryBuffer do
 		@history.size.should == 6
 		@history.position.should == nil
 	end
- 
 end
-
-

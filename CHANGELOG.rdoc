@@ -1,0 +1,30 @@
+== Version 0.3
+
+* Fixed linux-specific bugs.
+* Added RawLine::Line#words method, which returns the words typed in the current line.
+* undo and redo action now bound to C-u and C-r instead of C-z and C-y to avoid conflicts on Linux.
+* test file and directory renaming
+* Fixed [#21300] bad requirement because sensitive case error 
+* Fixed [#21301] unitialized constant when no WIN32CONSOLE
+* Added Ruby 1.9.1 support.
+* Editor#read now takes an optional parameter (default: false) to enable or disable history
+* Line is no longer added to history when calling Editor#history_back 
+* Added Editor#filename_completion_proc
+* Editor#completion_proc defaults to Editor#filename_completion_proc
+*	RawLine is now a drop-in replacement for Readline.
+* Added examples/readline_emulation.rb
+* Moved repository to GitHub
+
+== Version 0.2.0
+
+* Added /examples and /test directory to gem.
+* Escape codes can now be used in prompt.
+* It is now possible to use bind(key, &block) with a String as key, even if the corresponding escape sequence is not defined.
+* Added Editor#write_line(string) to print a any string (and "hit return").
+* Library name changed to "RawLine" to avoid name collision issues (Bug 18879: http://rubyforge.org/tracker/?func=detail&aid=18879&group_id=5622&atid=21788).
+* Provided alternative implementation for left and right arrows if terminal
+supports escape sequences (on Windows, it requires the Win32Console gem).
+
+== Version 0.1.0
+
+First preview release of InLine, implementing some of the functionality provided by the ReadLine library such as basic line editing, history and word completion. 

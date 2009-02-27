@@ -1,4 +1,4 @@
-#!/usr/local/bin/ruby -w
+#!/usr/bin/env ruby
 
 #
 #	editor.rb
@@ -35,7 +35,11 @@ module RawLine
 
 		include HighLine::SystemExtensions
 
-		attr_accessor :char, :history_size, :line_history_size, :terminal, :keys, :word_separator, :mode, :completion_proc, :line, :history, :completion_append_string
+		attr_accessor :char, :history_size, :line_history_size 
+		attr_accessor :terminal, :keys, :mode 
+		attr_accessor :completion_proc, :line, :history, :completion_append_string 
+		attr_accessor :match_hidden_files, :completion_matches
+		attr_accessor :word_break_characters
 
 		# 
 		# Create an instance of RawLine::Editor which can be used 
@@ -47,32 +51,39 @@ module RawLine
 		# buffer (50).
 		# * <tt>@keys</tt> - the keys (arrays of character codes) 
 		# bound to specific actions.
-		# * <tt>@word_separator</tt> - a string used as word separator (' ').
+		# * <tt>@word_break_characters</tt> - a string listing all characters 
+		# which can be used as word separators (" \t\n\"\\'`@$><=;|&{(/").
 		# * <tt>@mode</tt> - The editor's character insertion mode (:insert).
 		# * <tt>@completion_proc</tt> - a Proc object used to perform word completion.
-		# * <tt>@completion_append_string</tt> - a string to append to completed words.
-		# * <tt>@terminal</tt> -  an RawLine::Terminal containing character key codes.
+		# * <tt>@completion_append_string</tt> - a string to append to completed words ('').
+		# * <tt>@completion_matches</tt> - word completion candidates.
+		# * <tt>@terminal</tt> -  a RawLine::Terminal containing character key codes.
 		#
 		def initialize(input=STDIN, output=STDOUT)
-			@win32_io = Win32::Console::ANSI::IO.new if RawLine.const_defined? :WIN32CONSOLE
 			@input = input
 			@output = output
 			case RUBY_PLATFORM
-			when /win32/i then
+			when /mswin/i then
 				@terminal = WindowsTerminal.new
+				if RawLine.win32console? then
+					@win32_io = Win32::Console::ANSI::IO.new
+				end
 			else
 				@terminal = VT220Terminal.new
 			end
 			@history_size = 30
 			@line_history_size = 50
 			@keys = {}
-			@word_separator = ' '
+			@word_break_characters = " \t\n\"\\'`@$><=;|&{(/"
 			@mode = :insert
-			@completion_proc = []
-			@completion_append_string = ' '
+			@completion_proc = filename_completion_proc
+			@completion_append_string = ''
+			@match_hidden_files = false
 			@completion_matches = HistoryBuffer.new(0) { |h| h.duplicates = false; h.cycle = true }
 			set_default_keys
 			yield self if block_given?
+			update_word_separator
+			@add_history = false 
 			@history = HistoryBuffer.new(@history_size) do |h| 
 				h.duplicates = false; 
 				h.exclude = lambda { |item| item.strip == "" }
@@ -81,12 +92,22 @@ module RawLine
 		end
 
 		# 
+		# Return the current RawLine version
+		#
+		def library_version
+			"RawLine v#{RawLine.version}"
+		end
+
+		# 
 		# Read characters from <tt>@input</tt> until the user presses ENTER 
 		# (use it in the same way as you'd use IO#gets)
-		# An optional prompt can be specified to be printed at the beginning of the line.
+		# * An optional prompt can be specified to be printed at the beginning of the line.
+		# * An optional flag can be specified to enable/disable editor history (default = false)
 		#
-		def read(prompt="")
+		def read(prompt="", add_history=false)
+			update_word_separator
 			@output.print prompt if prompt != ""
+			@add_history = add_history
 			@line = Line.new(@line_history_size) do |l| 
 				l.prompt = prompt
 				l.word_separator = @word_separator
@@ -101,15 +122,24 @@ module RawLine
 			"#{@line.text}\n"
 		end
 
-		# 
-		# Read and parse a character from <tt>@input</tt>.
-		# This method is called automatically by <tt>read</tt>
-		#
-		def read_character
-			@output.flush
-			c = get_character(@input)
-			@char = parse_key_code(c) || c
-		end
+		# Readline compatibility aliases
+		alias readline read
+		alias completion_append_char completion_append_string
+		alias completion_append_char= completion_append_string=
+		alias basic_word_break_characters word_break_characters
+		alias basic_word_break_characters= word_break_characters=
+		alias completer_word_break_characters word_break_characters
+		alias completer_word_break_characters= word_break_characters=
+
+			# 
+			# Read and parse a character from <tt>@input</tt>.
+			# This method is called automatically by <tt>read</tt>
+			#
+			def read_character
+				@output.flush
+				c = get_character(@input)
+				@char = parse_key_code(c) || c
+			end
 
 		#
 		#	Parse a key or key sequence into the corresponding codes.
@@ -177,7 +207,7 @@ module RawLine
 		# * An Array identifying a character or character sequence defined for the current terminal
 		# * A String identifying a character or character sequence, even if it is not defined for the current terminal
 		# * An Hash identifying a character or character sequence, even if it is not defined for the current terminal
-		#
+		# 
 		# If <tt>key</tt> is a hash, then:
 		#
 		# * It must contain only one key/value pair
@@ -305,6 +335,25 @@ module RawLine
 				process_character
 			end
 		end
+
+		# 
+		# Complete file and directory names.
+		# Hidden files and directories are matched only if <tt>@match_hidden_files</tt> is true.
+		#
+		def filename_completion_proc
+			lambda do |word|
+				dirs = @line.text.split('/')
+					path = @line.text.match(/^\//) ? "/" : Dir.pwd+"/"
+				if dirs.length == 0 then # starting directory
+					dir = path
+				else
+					dirs.delete(dirs.last) unless File.directory?(path+dirs.join('/'))
+					dir = path+dirs.join('/')
+				end
+				Dir.entries(dir).select { |e| (e =~ /^\./ && @match_hidden_files && word == '') || (e =~ /^#{word}/ && e !~ /^\./) }
+			end
+		end
+
 
 		# 
 		# Adds <tt>@line.text</tt> to the editor history. This action is 
@@ -490,7 +539,7 @@ module RawLine
 		# Add the current line (<tt>@line.text</tt>) to the editor history.
 		#
 		def add_to_history
-			@history << @line.text.dup unless @line.text == ""
+			@history << @line.text.dup if @add_history && @line.text != ""
 		end
 
 		# 
@@ -539,6 +588,16 @@ module RawLine
 		end
 
 		private
+
+		def update_word_separator
+			chars = []
+			@word_break_characters.each_byte do |c|
+				ch = (c.is_a? Fixnum) ? c : c.ord
+				value = (ch == ?\s.ord) ? ' ' : Regexp.escape(ch.chr).to_s
+				chars << value
+			end
+			@word_separator = /#{chars.join('|')}/
+		end
 
 		def bind_hash(key, block)
 			key.each_pair do |j,k|
@@ -606,11 +665,11 @@ module RawLine
 
 	end
 
-	if ANSI then
+	if RawLine.ansi? then
 
 		class Editor
 
-			if RawLine.const_defined? :WIN32CONSOLE then
+			if RUBY_PLATFORM.match(/mswin/) && RawLine.win32console? then
 				def escape(string)
 					string.each_byte { |c| @win32_io.putc c }
 				end

@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-#
+
 require "rake/rdoctask"
 require "rake/testtask"
 require "rake/gempackagetask"
@@ -12,10 +12,10 @@ Rake::TestTask.new do |test|
 end
 
 Rake::RDocTask.new do |rdoc|
-  rdoc.rdoc_files.include( "README.markdown",
-                           "CHANGELOG.markdown",
+  rdoc.rdoc_files.include( "README.rdoc",
+                           "CHANGELOG.rdoc",
                            "LICENSE", "lib/" )
-  rdoc.main     = "README.markdown"
+  rdoc.main     = "README.rdoc"
   rdoc.rdoc_dir = "doc/html"
   rdoc.title    = "RawLine Documentation"
 end
@@ -31,9 +31,9 @@ spec = Gem::Specification.new do |s|
   s.description = %q{RawLine can be used to define custom key bindings, perform common line editing operations, manage command history and define custom command completion rules. }
   s.has_rdoc = true
   s.authors = ["Fabio Cevasco"]
-  s.files = FileList["{lib}/**/*"].to_a+FileList["{examples}/*"].to_a+FileList["{spec}/*"].to_a+["README.markdown", "LICENSE", "CHANGELOG.markdown"]
-  s.rdoc_options = ["--main", "README.markdown", "--exclude", "spec"]
-  s.extra_rdoc_files = ["README.markdown", "LICENSE", "CHANGELOG.markdown"]
+  s.files = FileList["{lib}/**/*"].to_a+FileList["{examples}/*"].to_a+FileList["{spec}/*"].to_a+["README.rdoc", "LICENSE", "CHANGELOG.rdoc"]
+  s.rdoc_options = ["--main", "README.rdoc", "--exclude", "spec"]
+  s.extra_rdoc_files = ["README.rdoc", "LICENSE", "CHANGELOG.rdoc"]
 	s.test_file  = 'spec/rawline_spec.rb'  
 	s.add_dependency("highline", ">= 1.4.0")
 end

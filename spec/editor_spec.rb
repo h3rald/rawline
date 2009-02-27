@@ -1,4 +1,4 @@
-#!/usr/local/bin/ruby -w
+#!/usr/bin/env ruby
 
 module RawLine
 	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
@@ -103,19 +103,19 @@ describe RawLine::Editor do
 	it "supports history" do
 		@input << "test #7a"
 		@input.rewind
-		@editor.read
+		@editor.read "", true
 		@editor.newline
 		@input << "test #7b"
 		@input.pos = 8
-		@editor.read
+		@editor.read "", true
 		@editor.newline
 		@input << "test #7c"
 		@input.pos = 16
-		@editor.read
+		@editor.read "", true
 		@editor.newline
 		@input << "test #7d"
 		@input.pos = 24
-		@editor.read
+		@editor.read "", true
 		@editor.newline
 		@editor.history_back
 		@editor.line.text.should == "test #7c"
@@ -138,7 +138,7 @@ describe RawLine::Editor do
 		@editor.completion_append_string = "\t"
 		@editor.bind(:tab) { @editor.complete }
 		@editor.completion_proc = lambda do |word|
-	  	if word
+	  	if word then
  				['select', 'update', 'delete', 'debug', 'destroy'].find_all	{ |e| e.match(/^#{Regexp.escape(word)}/) }
 			end
 		end

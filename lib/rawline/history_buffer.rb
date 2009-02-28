@@ -27,10 +27,8 @@ module RawLine
 		# Create an instance of RawLine::HistoryBuffer. 
 		# This method takes an optional block used to override the 
 		# following instance attributes:
-		# * <tt>@duplicates</tt> - whether or not duplicate items will be stored in the
-		# buffer.
-		# * <tt>@exclude</tt> - a Proc object defining exclusion rules to prevent items
-		# from being added to the buffer.
+		# * <tt>@duplicates</tt> - whether or not duplicate items will be stored in the buffer.
+		# * <tt>@exclude</tt> - a Proc object defining exclusion rules to prevent items from being added to the buffer.
 		# * <tt>@cycle</tt> - Whether or not the buffer is cyclic.
 		#
 		def initialize(size)

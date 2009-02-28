@@ -1,19 +1,19 @@
-== Version 0.3
+== Version 0.3.0
 
 * Fixed linux-specific bugs.
 * Added RawLine::Line#words method, which returns the words typed in the current line.
 * undo and redo action now bound to C-u and C-r instead of C-z and C-y to avoid conflicts on Linux.
-* test file and directory renaming
-* Fixed [#21300] bad requirement because sensitive case error 
-* Fixed [#21301] unitialized constant when no WIN32CONSOLE
+* test file and directory renaming.
+* Fixed #1 [#21300] bad requirement because sensitive case error.
+* Fixed #2 [#21301] unitialized constant when no WIN32CONSOLE.
 * Added Ruby 1.9.1 support.
-* Editor#read now takes an optional parameter (default: false) to enable or disable history
-* Line is no longer added to history when calling Editor#history_back 
-* Added Editor#filename_completion_proc
-* Editor#completion_proc defaults to Editor#filename_completion_proc
+* Editor#read now takes an optional parameter (default: false) to enable or disable history.
+* Line is no longer added to history when calling Editor#history_back.
+* Added Editor#filename_completion_proc.
+* Editor#completion_proc defaults to Editor#filename_completion_proc.
 *	RawLine is now a drop-in replacement for Readline.
-* Added examples/readline_emulation.rb
-* Moved repository to GitHub
+* Added examples/readline_emulation.rb.
+* Moved repository to GitHub.
 
 == Version 0.2.0
 

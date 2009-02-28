@@ -1,14 +1,12 @@
 #!/usr/bin/env ruby
 
-module RawLine
-	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
-end
+dir = File.dirname(File.expand_path(__FILE__))+'/..' 
 
 require 'rubygems'
 require 'highline'
 
-require "#{RawLine::TEST_HOME}/lib/rawline/history_buffer"
-require "#{RawLine::TEST_HOME}/lib/rawline/line"
+require "#{dir}/lib/rawline/history_buffer"
+require "#{dir}/lib/rawline/line"
 
 describe RawLine::Line do
 

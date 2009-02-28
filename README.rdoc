@@ -11,7 +11,7 @@ RawLine was created to provide a 100% Ruby alternative to the ReadLine library, 
 
 The simplest method to install RawLine is to install the gem:
 
-	gem install -r rawline
+	gem install rawline
 
 == Usage
 
@@ -54,7 +54,7 @@ Simply include the RawLine (or Rawline) module:
 
 but also:
 
-	rawline_editor	# RawLine::Editor
+	Rawline.editor	# RawLine::Editor
 
 ...which opens a world of endless possibilities! ;-)
  

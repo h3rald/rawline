@@ -10,6 +10,30 @@
 #
 
 require "rubygems"
+
+#
+# The RawLine (or Rawline) module can be used in the same way
+# as the Readline one.
+#
+#	<tt>require 'rawline'</tt>
+#	<tt>include Rawline</tt>
+#	
+#	You'll get...
+#
+#	* <tt>readline(prompt="", add_history=false)</tt> - to read characters from $stdin
+#	* <tt>Rawline::HISTORY</tt> - to access line history (an instance of RawLine::HistoryBuffer)
+#	* <tt>Rawline::FILENAME_COMPLETION_PROC</tt> -  a Proc object used for filename completion
+#	* <tt>Rawline.completion_proc</tt> - the Proc object used for TAB completion (defaults to FILENAME_COMPLETION_PROC).
+#	* <tt>Rawline.completion_matches</tt> - an array of completion matches.
+#	* <tt>Rawline.completion_append_char</tt> - a character to append after a successful completion.
+#	* <tt>Rawline.basic_word_break_characters</tt> - a String listing all the characters used as word separators.
+#	* <tt>Rawline.completer_word_break_characters</tt> - same as above. 
+#	* <tt>Rawline.library_version</tt> - the current version of the Rawline library.
+#	* <tt>Rawline.clear_history</tt> - to clear the current history.
+#	* <tt>Rawline.match_hidden_files</tt> - whether FILENAME_COMPLETION_PROC matches hidden files and folders or not.
+#
+#	And also <tt>Rawline.editor</tt>, an instance of RawLine::Editor which can be used for anything you like.
+#
 module RawLine
 
 	def self.rawline_version
@@ -90,14 +114,6 @@ module RawLine
 			end
 		end
 
-	end
-
-	def self.included(klass)
-		klass.class_eval do 
-			def rawline_editor 
-				RawLine.editor
-			end
-		end
 	end
 
 end

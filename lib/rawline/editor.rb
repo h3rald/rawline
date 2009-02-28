@@ -47,12 +47,9 @@ module RawLine
 		# This method takes an optional block used to override the 
 		# following instance attributes:
 		# * <tt>@history_size</tt> - the size of the editor history buffer (30).
-		# * <tt>@line_history_size</tt> - the size of the editor line history 
-		# buffer (50).
-		# * <tt>@keys</tt> - the keys (arrays of character codes) 
-		# bound to specific actions.
-		# * <tt>@word_break_characters</tt> - a string listing all characters 
-		# which can be used as word separators (" \t\n\"\\'`@$><=;|&{(/").
+		# * <tt>@line_history_size</tt> - the size of the editor line history buffer (50).
+		# * <tt>@keys</tt> - the keys (arrays of character codes) bound to specific actions.
+		# * <tt>@word_break_characters</tt> - a string listing all characters which can be used as word separators (" \t\n\"\\'`@$><=;|&{(/").
 		# * <tt>@mode</tt> - The editor's character insertion mode (:insert).
 		# * <tt>@completion_proc</tt> - a Proc object used to perform word completion.
 		# * <tt>@completion_append_string</tt> - a string to append to completed words ('').
@@ -101,8 +98,8 @@ module RawLine
 		# 
 		# Read characters from <tt>@input</tt> until the user presses ENTER 
 		# (use it in the same way as you'd use IO#gets)
-		# * An optional prompt can be specified to be printed at the beginning of the line.
-		# * An optional flag can be specified to enable/disable editor history (default = false)
+		# * An optional prompt can be specified to be printed at the beginning of the line ("").
+		# * An optional flag can be specified to enable/disable editor history (false)
 		#
 		def read(prompt="", add_history=false)
 			update_word_separator
@@ -343,7 +340,7 @@ module RawLine
 		def filename_completion_proc
 			lambda do |word|
 				dirs = @line.text.split('/')
-					path = @line.text.match(/^\//) ? "/" : Dir.pwd+"/"
+					path = @line.text.match(/^\/|[a-zA-Z]:\//) ? "/" : Dir.pwd+"/"
 				if dirs.length == 0 then # starting directory
 					dir = path
 				else

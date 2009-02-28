@@ -8,7 +8,7 @@ puts "*** Readline emulation Test Shell ***"
 puts " * Press CTRL+X to exit"
 puts " * Press <TAB> for file completion"
 
-rawline_editor.bind(:ctrl_x) { puts; puts "Exiting..."; exit }
+Rawline.editor.bind(:ctrl_x) { puts; puts "Exiting..."; exit }
 
 Dir.chdir '..'
 

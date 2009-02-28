@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 
-module RawLine
-	TEST_HOME = File.dirname(File.expand_path(__FILE__))+'/..' unless const_defined?(:TEST_HOME)
-end
+dir = File.dirname(File.expand_path(__FILE__))+'/..' 
 
 require 'highline/system_extensions'
 
@@ -14,7 +12,7 @@ module HighLine::SystemExtensions
 end
 
 require 'stringio'
-require "#{RawLine::TEST_HOME}/lib/rawline"
+require "#{dir}/lib/rawline"
 
 describe RawLine::Editor do
 

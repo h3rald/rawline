@@ -7,7 +7,7 @@ require 'highline/system_extensions'
 module HighLine::SystemExtensions
   # Override Windows' character reading so it's not tied to STDIN.
   def get_character( input = STDIN )
-		input.getbyte
+		(RUBY_VERSION.gsub(/1\./, '').to_f >= 8.7) ? input.getbyte : input.getc
   end
 end
 

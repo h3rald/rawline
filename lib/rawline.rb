@@ -44,6 +44,7 @@ module RawLine
 
 	if RUBY_PLATFORM.match(/mswin/i) then
 		begin
+			require 'win32console'
 			def self.win32console?; true; end
 			def self.ansi?; true; end
 		rescue Exception
@@ -54,6 +55,9 @@ module RawLine
 		def self.ansi?; true; end
 	end
 end
+
+# Adding Fixnum#ord for Ruby 1.8.6
+class Fixnum;	def ord; self; end;	end unless Fixnum.method_defined? :ord
 
 Rawline = RawLine
 

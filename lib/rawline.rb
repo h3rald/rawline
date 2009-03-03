@@ -37,7 +37,7 @@ require "rubygems"
 module RawLine
 
 	def self.rawline_version
-		"0.3.0"
+		"0.3.1"
 	end
 
 	class BindingException < RuntimeError; end
@@ -80,8 +80,8 @@ module RawLine
 				:completion_proc,
 				:completion_proc=,
 				:completion_matches,
-				:completion_append_char,
-				:completion_append_char=,
+				:completion_append_character,
+				:completion_append_character=,
 				:basic_word_break_characters,
 				:basic_word_break_characters=,
 				:completer_word_break_characters,
@@ -92,7 +92,7 @@ module RawLine
 				:match_hidden_files=
 			]
 
-		self.module_eval do
+		self.class.module_eval do
 			HISTORY = RawLine.editor.history
 			FILENAME_COMPLETION_PROC = RawLine.editor.filename_completion_proc
 

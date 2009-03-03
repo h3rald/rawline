@@ -21,8 +21,6 @@ module RawLine
 		attr_reader :position, :size
 		attr_accessor :duplicates, :exclude, :cycle
 
-		undef <<
-
 		#
 		# Create an instance of RawLine::HistoryBuffer. 
 		# This method takes an optional block used to override the 
@@ -115,7 +113,7 @@ module RawLine
 		# 
 		# Add a new item to the buffer.
 		#
-		def <<(item)
+		def push(item)
 			delete(item) unless @duplicates
 			unless @exclude.call(item)
 				# Remove the oldest element if size is exceeded
@@ -124,10 +122,12 @@ module RawLine
 					reverse!
 				end
 				# Add the new item and reset the position
-				push(item)
+				super(item)
 				@position = nil 
 			end
 		end
+
+		alias << push
 
 	end
 

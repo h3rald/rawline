@@ -92,7 +92,7 @@ module RawLine
 		# Return the current RawLine version
 		#
 		def library_version
-			"RawLine v#{RawLine.version}"
+			"RawLine v#{RawLine.rawline_version}"
 		end
 
 		# 
@@ -116,13 +116,13 @@ module RawLine
 				break if @char == @terminal.keys[:enter] || !@char
 			end
 			@output.print "\n"
-			"#{@line.text}\n"
+			@line.text
 		end
 
 		# Readline compatibility aliases
 		alias readline read
-		alias completion_append_char completion_append_string
-		alias completion_append_char= completion_append_string=
+		alias completion_append_character completion_append_string
+		alias completion_append_character= completion_append_string=
 		alias basic_word_break_characters word_break_characters
 		alias basic_word_break_characters= word_break_characters=
 		alias completer_word_break_characters word_break_characters
@@ -312,7 +312,7 @@ module RawLine
 					move_to_position(@line.word[:end]+@completion_append_string.length+1)
 				end
 				(@line.position-word_start).times { delete_left_character(true) }
-				write match+@completion_append_string
+				write match+@completion_append_string.to_s
 			end
 			unless matches.empty? then
 				@completion_matches.resize(matches.length) 
@@ -587,6 +587,7 @@ module RawLine
 		private
 
 		def update_word_separator
+			return @word_separator = "" if @word_break_characters.to_s == ""
 			chars = []
 			@word_break_characters.each_byte do |c|
 				ch = (c.is_a? Fixnum) ? c : c.ord

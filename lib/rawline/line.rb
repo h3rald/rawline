@@ -59,7 +59,7 @@ module RawLine
 		# * <tt>:end</tt>: The position in the line corresponding to the word end
 		# * <tt>:text</tt>: The word text.
 		def word
-			return {:start => bol, :end => eol, :text => @text} if @word_separator.to_s == ''
+			return {:start => bol, :end => eol+1, :text => @text} if @word_separator.to_s == ''
 			last = @text.index(@word_separator, @position)
 			first = @text.rindex(@word_separator, @position)
 			# Trim word separators and handle EOL and BOL

@@ -304,12 +304,12 @@ module RawLine
 			@completion_matches.empty
 			word_start = @line.word[:start]
 			sub_word = @line.text[@line.word[:start]..@line.position-1] || ""
-			matches  = @completion_proc.call(sub_word) unless @completion_proc == []
-			matches = (matches.is_a?(Array)) ? matches.sort.reverse : []
+			matches  = @completion_proc.call(sub_word) unless !completion_proc || @completion_proc == []
+			matches = matches.to_a.compact.sort.reverse
 			complete_word = lambda do |match|
 				unless @line.word[:text].length == 0
 					# If not in a word, print the match, otherwise continue existing word
-					move_to_position(@line.word[:end]+@completion_append_string.length+1)
+					move_to_position(@line.word[:end]+@completion_append_string.to_s.length+1)
 				end
 				(@line.position-word_start).times { delete_left_character(true) }
 				write match+@completion_append_string.to_s

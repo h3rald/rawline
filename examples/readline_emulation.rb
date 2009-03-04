@@ -10,6 +10,8 @@ Rawline.editor.bind(:ctrl_x) { puts; puts "Exiting..."; exit }
 
 Dir.chdir '..'
 
+include Rawline
+
 loop do
-	puts "You typed: [#{Rawline.readline("=> ", true)}]"
+	puts "You typed: [#{readline("=> ", true)}]"
 end

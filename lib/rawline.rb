@@ -15,25 +15,6 @@ require "rubygems"
 # The RawLine (or Rawline) module can be used in the same way
 # as the Readline one.
 #
-#	<tt>require 'rawline'</tt>
-#	<tt>include Rawline</tt>
-#	
-#	You'll get...
-#
-#	* <tt>readline(prompt="", add_history=false)</tt> - to read characters from $stdin
-#	* <tt>Rawline::HISTORY</tt> - to access line history (an instance of RawLine::HistoryBuffer)
-#	* <tt>Rawline::FILENAME_COMPLETION_PROC</tt> -  a Proc object used for filename completion
-#	* <tt>Rawline.completion_proc</tt> - the Proc object used for TAB completion (defaults to FILENAME_COMPLETION_PROC).
-#	* <tt>Rawline.completion_matches</tt> - an array of completion matches.
-#	* <tt>Rawline.completion_append_char</tt> - a character to append after a successful completion.
-#	* <tt>Rawline.basic_word_break_characters</tt> - a String listing all the characters used as word separators.
-#	* <tt>Rawline.completer_word_break_characters</tt> - same as above. 
-#	* <tt>Rawline.library_version</tt> - the current version of the Rawline library.
-#	* <tt>Rawline.clear_history</tt> - to clear the current history.
-#	* <tt>Rawline.match_hidden_files</tt> - whether FILENAME_COMPLETION_PROC matches hidden files and folders or not.
-#
-#	And also <tt>Rawline.editor</tt>, an instance of RawLine::Editor which can be used for anything you like.
-#
 module RawLine
 
 	def self.rawline_version
@@ -72,7 +53,7 @@ require "#{dir}/rawline/editor"
 
 module RawLine
 	self.instance_eval do
-		class << self;	attr_accessor :editor, :implemented_methods;	end
+		class << self;	attr_accessor :editor end
 		@editor = RawLine::Editor.new
 
 		@implemented_methods = 
@@ -92,17 +73,6 @@ module RawLine
 				:match_hidden_files=
 			]
 
-		self.class.module_eval do
-			HISTORY = RawLine.editor.history
-			FILENAME_COMPLETION_PROC = RawLine.editor.filename_completion_proc
-
-			def readline(prompt="", add_history=false)
-				RawLine.editor.read prompt, add_history
-			end
-
-			alias rawline readline
-		end
-
 		@implemented_methods.each do |meth|				
 			self.class.module_eval do
 				define_method meth do |*args|
@@ -117,7 +87,23 @@ module RawLine
 				end
 			end
 		end
+		
+		private
+		
+		HISTORY = RawLine.editor.history
+		FILENAME_COMPLETION_PROC = RawLine.editor.filename_completion_proc
+
+		readline_method = lambda do
+
+			def readline(prompt="", add_history=false)
+				RawLine.editor.read prompt, add_history
+			end
+
+			alias rawline readline
+		end
+		
+		self.class.module_eval &readline_method
+		self.module_eval &readline_method
 
 	end
-
 end

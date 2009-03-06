@@ -1,5 +1,6 @@
 #!usr/bin/env ruby
 
+require 'rubygems'
 require 'rush'
 require File.dirname(File.expand_path(__FILE__))+'/../lib/rawline'
 

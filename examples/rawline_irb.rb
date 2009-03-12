@@ -22,6 +22,7 @@ class RawlineInputMethod < IRB::ReadlineInputMethod
 end
 
 module IRB
+ 	@CONF[:LC_MESSAGES] = Locale.new
 	@CONF[:SCRIPT] = RawlineInputMethod.new
 end
 IRB.start

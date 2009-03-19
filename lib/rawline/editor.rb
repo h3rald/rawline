@@ -134,7 +134,7 @@ module RawLine
 			#
 			def read_character
 				@output.flush
-				c = get_character(@input)
+				c = get_character(@input).ord rescue nil
 				@char = parse_key_code(c) || c
 			end
 
@@ -147,7 +147,7 @@ module RawLine
 				sequence = [code]
 				seqs = []
 				loop do
-					c = get_character(@input)
+					c = get_character(@input).ord rescue nil
 					sequence << c
 					seqs = @terminal.escape_sequences.select { |e| e[0..sequence.length-1] == sequence }
 					break if seqs.empty?

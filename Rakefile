@@ -23,7 +23,7 @@ end
 spec = Gem::Specification.new do |s|
   s.name = %q{rawline}
   s.version = "0.3.1"
-  s.date = %q{2009-03-08}
+  s.date = %q{2009-03-07}
   s.summary = %q{A library for defining custom key bindings and perform line editing operations}
   s.email = %q{h3rald@h3rald.com}
   s.homepage = %q{http://rubyforge.org/projects/rawline}

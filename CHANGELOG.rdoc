@@ -1,7 +1,6 @@
 == Version 0.3.1
 
 * Renamed completion_append_char to complation_append_character (Readline compatibility).
-* Rawline module should not be included (Readline compatibility).
 * Fixed minor bugs in HistoryBuffer (push and << methods are now redefined properly).
 * The string returned by Editor#read (and Rawline#readline) does not contain a trailing newline character anymore (Readline compatibility)
 * It is now possible to set Line#word_separator to an empty string or nil (Readline compatibility).

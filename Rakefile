@@ -1,45 +1,31 @@
 #!/usr/bin/env ruby
 
-require "rdoc/task"
-require "rake/testtask"
-require "rubygems/package_task"
+task :default => :spec
 
-
-Rake::TestTask.new do |test|
-  test.libs       << "spec"
-  test.test_files =  [ "spec/rawline_spec.rb" ]
-  test.verbose    =  true
+# RSpec
+begin
+	require "rspec/core/rake_task"
+	RSpec::Core::RakeTask.new(:spec) do |t|
+		t.pattern = 'spec/**/*_spec.rb'
+		t.rspec_opts = ["-c", "-f progress"]
+	end
+	RSpec::Core::RakeTask.new(:test) do |t|
+		args = ARGV.reverse
+		args.pop
+		t.pattern = args.join " "
+		t.rspec_opts = ["-c", "-f progress"]
+	end
+rescue LoadError
+	puts "RSpec is not available. Install it with: gem install rspec"
 end
 
-Rake::RDocTask.new do |rdoc|
-  rdoc.rdoc_files.include( "README.rdoc",
-                           "CHANGELOG.rdoc",
-                           "LICENSE", "lib/" )
-  rdoc.main     = "README.rdoc"
-  rdoc.rdoc_dir = "doc/html"
-  rdoc.title    = "RawLine Documentation"
-end
-
-spec = Gem::Specification.new do |s|
-  s.name = %q{rawline}
-  s.version = "0.3.1"
-  s.date = %q{2009-03-07}
-  s.summary = %q{A library for defining custom key bindings and perform line editing operations}
-  s.email = %q{h3rald@h3rald.com}
-  s.homepage = %q{http://rubyforge.org/projects/rawline}
-  s.rubyforge_project = %q{rawline}
-  s.description = %q{RawLine can be used to define custom key bindings, perform common line editing operations, manage command history and define custom command completion rules. }
-  s.has_rdoc = true
-  s.authors = ["Fabio Cevasco"]
-  s.files = FileList["{lib}/**/*"].to_a+FileList["{examples}/*"].to_a+FileList["{spec}/*"].to_a+["README.rdoc", "LICENSE", "CHANGELOG.rdoc"]
-  s.rdoc_options = ["--main", "README.rdoc", "--exclude", "spec"]
-  s.extra_rdoc_files = ["README.rdoc", "LICENSE", "CHANGELOG.rdoc"]
-	s.test_file  = 'spec/rawline_spec.rb'  
-	s.add_dependency("highline", ">= 1.4.0")
-end
-
-Gem::PackageTask.new(spec) do |pkg|
-	pkg.gem_spec = spec
-  pkg.need_tar = true
-	pkg.need_zip = true
+# Yard
+begin
+	require 'yard'
+	YARD::Rake::YardocTask.new(:yardoc) do |t|
+		t.files   = ['lib/**/*.rb', './README.rdoc', 'CHANGELOG.rdoc', 'lib/*.rb']
+		t.options = ['--no-private']
+	end
+rescue LoadError
+	puts "YARD is not available. Install it with: gem install yard"
 end

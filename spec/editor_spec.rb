@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-dir = File.dirname(File.expand_path(__FILE__))+'/..' 
-
 require 'highline/system_extensions'
 
 module HighLine::SystemExtensions
@@ -12,7 +10,7 @@ module HighLine::SystemExtensions
 end
 
 require 'stringio'
-require "#{dir}/lib/rawline"
+require_relative "../lib/rawline.rb"
 
 describe RawLine::Editor do
 

@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 
-dir = File.dirname(File.expand_path(__FILE__))+'/..' 
-
-require "#{dir}/lib/rawline/history_buffer"
+require_relative "../lib/rawline/history_buffer.rb"
 
 describe RawLine::HistoryBuffer do
 

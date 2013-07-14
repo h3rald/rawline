@@ -1,12 +1,10 @@
 #!/usr/bin/env ruby
 
-dir = File.dirname(File.expand_path(__FILE__))+'/..' 
-
 require 'rubygems'
 require 'highline'
 
-require "#{dir}/lib/rawline/history_buffer"
-require "#{dir}/lib/rawline/line"
+require_relative "../lib/rawline/history_buffer.rb"
+require_relative "../lib/rawline/line.rb"
 
 describe RawLine::Line do
 

@@ -18,7 +18,7 @@ require "rubygems"
 module RawLine
 
 	def self.rawline_version
-		"0.3.1"
+		"0.3.2"
 	end
 
 	class BindingException < RuntimeError; end
@@ -102,8 +102,8 @@ module RawLine
 			alias rawline readline
 		end
 		
-		self.class.module_eval &readline_method
-		self.module_eval &readline_method
+		self.class.module_eval { readline_method.call }
+		self.module_eval { readline_method.call }
 
 	end
 end

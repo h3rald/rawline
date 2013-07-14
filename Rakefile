@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-require "rake/rdoctask"
+require "rdoc/task"
 require "rake/testtask"
-require "rake/gempackagetask"
+require "rubygems/package_task"
 
 
 Rake::TestTask.new do |test|
@@ -38,9 +38,8 @@ spec = Gem::Specification.new do |s|
 	s.add_dependency("highline", ">= 1.4.0")
 end
 
-Rake::GemPackageTask.new(spec) do |pkg|
+Gem::PackageTask.new(spec) do |pkg|
 	pkg.gem_spec = spec
   pkg.need_tar = true
 	pkg.need_zip = true
 end
-

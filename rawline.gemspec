@@ -16,4 +16,5 @@ Gem::Specification.new do |s|
   s.files += Dir.glob("spec/*")
   s.files += ["README.rdoc", "LICENSE", "CHANGELOG.rdoc"]
 	s.add_runtime_dependency("highline", [">= 1.7.2"])
+  s.add_development_dependency("rspec", ["~> 3.0"])
 end

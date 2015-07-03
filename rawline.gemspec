@@ -15,5 +15,5 @@ Gem::Specification.new do |s|
   s.files += Dir.glob("examples/*")
   s.files += Dir.glob("spec/*")
   s.files += ["README.rdoc", "LICENSE", "CHANGELOG.rdoc"]
-	s.add_runtime_dependency("highline", [">= 1.4.0"])
+	s.add_runtime_dependency("highline", [">= 1.7.2"])
 end

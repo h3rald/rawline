@@ -34,7 +34,7 @@ describe RawLine::Editor do
 		@editor.bind(21) { "test #2c" }
 		@editor.bind([22]) { "test #2d" }
 		@editor.terminal.escape_codes = [] # remove any existing escape codes
-		expect {@editor.bind({:test => [?\e.ord, ?t.ord, ?e.ord, ?s.ord, ?t.ord]}) { "test #2e" }}.to raise_error
+		expect {@editor.bind({:test => [?\e.ord, ?t.ord, ?e.ord, ?s.ord, ?t.ord]}) { "test #2e" }}.to raise_error(RawLine::BindingException)
 		@editor.terminal.escape_codes << ?\e.ord
 		expect {@editor.bind({:test => "\etest"}) { "test #2e" }}.to_not raise_error
 		expect {@editor.bind("\etest2") { "test #2f" }}.to_not raise_error
